@@ -1,3 +1,48 @@
+/* Self-hosted (no third-party font requests). Mirrors Google Fonts' own CSS:
+   each weight points at the same file, exactly as fonts.googleapis.com served it. */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('assets/fonts/space-grotesk-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('assets/fonts/space-grotesk-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('assets/fonts/space-grotesk-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/jetbrains-mono-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('assets/fonts/jetbrains-mono-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('assets/fonts/jetbrains-mono-latin.woff2') format('woff2');
+}
+
 :root {
   color-scheme: dark;
   --bg: #0a0e16;
@@ -143,6 +188,45 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   backdrop-filter: blur(10px);
+}
+
+.tabs-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+}
+.tabs-toggle .hamburger-bar {
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.tabs-toggle[aria-expanded="true"] .hamburger-bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.tabs-toggle[aria-expanded="true"] .hamburger-bar:nth-child(2) { opacity: 0; }
+.tabs-toggle[aria-expanded="true"] .hamburger-bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* Phone widths: collapse the tab row behind a hamburger menu instead of
+   wrapping every section button onto the header. */
+@media (max-width: 720px) {
+  .tabs-toggle { display: flex; }
+  .tabs {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 2px;
+    order: 10;
+  }
+  .tabs.open { display: flex; }
+  .tabs .tab-btn { justify-content: flex-start; width: 100%; padding: 12px 14px; }
 }
 
 .theme-toggle {
@@ -431,6 +515,15 @@ main {
   gap: 7px;
   min-width: 200px;
   flex: 1 1 200px;
+}
+
+/* Phone widths: stack every form field/button in a single column instead of
+   relying on flex-wrap, which can leave the last item clipped instead of
+   cleanly wrapping once several fields + a submit button compete for a line. */
+@media (max-width: 560px) {
+  .panel-form { flex-direction: column; align-items: stretch; }
+  .panel-form .field { min-width: 0; flex: 1 1 auto; }
+  .panel-form > button:not(.btn-secondary) { width: 100%; }
 }
 
 label {
@@ -847,6 +940,21 @@ main:has(#tab-splitter.active) { max-width: 1600px; }
   padding: 18px;
   margin-bottom: 14px;
 }
+/* IPv6 guided plan: all 3 steps side by side, same row, like the IPv4 form. */
+.v6-plan-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+.v6-plan-row .plan-card { margin-bottom: 0; }
+@media (max-width: 1100px) {
+  .v6-plan-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 700px) {
+  .v6-plan-row { grid-template-columns: 1fr; }
+}
 .plan-card h3 {
   margin: 0 0 12px;
   font-size: 13px;
@@ -863,7 +971,7 @@ main:has(#tab-splitter.active) { max-width: 1600px; }
 .plan-box[hidden] { display: none; }
 .plan-box .tool-note { flex-basis: 100%; margin: 0; }
 .plan-box input[type="text"] { flex: 1 1 320px; }
-.plan-base { font-size: 15px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+.plan-base { font-size: 15px; font-weight: 700; color: var(--accent); overflow-wrap: anywhere; }
 
 .plan-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
 .plan-row .plan-name { flex: 2 1 200px; }

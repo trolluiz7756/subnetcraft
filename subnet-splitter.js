@@ -607,10 +607,22 @@ function compactTree(node, bits, data) {
   }
 }
 
-function expandTree(bits, data) {
+// depth is bounded to IPv4's 32 prefix levels, and the node count to a generous
+// but finite cap, so a tampered share link can't force unbounded recursion
+// (stack exhaustion) or an oversized tree (memory/DOM exhaustion) in whoever opens it.
+const MAX_TREE_NODES = 65536;
+
+function expandTree(bits, data, depth = 0, counter = { n: 0 }) {
+  counter.n += 1;
+  if (counter.n > MAX_TREE_NODES) throw new Error('tree too large');
+  if (depth > 32) throw new Error('tree too deep');
   const kind = bits.shift();
   if (kind === '1') {
-    return { label: '', vlan: '', children: [expandTree(bits, data), expandTree(bits, data)] };
+    return {
+      label: '',
+      vlan: '',
+      children: [expandTree(bits, data, depth + 1, counter), expandTree(bits, data, depth + 1, counter)],
+    };
   }
   if (kind !== '0') throw new Error('invalid tree');
   const [vlan, label] = data.shift() || ['', ''];

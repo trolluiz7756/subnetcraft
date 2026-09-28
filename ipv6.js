@@ -212,13 +212,68 @@ function generateUla() {
   ulaValue.textContent = `${compressIPv6(ulaNetwork)}/48`;
 }
 
+// Keeps step 3 honest about step 1: disables any subnet size that wouldn't fit
+// inside the current base prefix, so picking an invalid combination (like /48
+// subnets inside a /48 base) is caught before "Generar mi plan", not after.
+const planSizeHint = $('v6-plan-size-hint');
+
+function currentBasePrefixForPlan() {
+  if (document.querySelector('input[name="v6-source"]:checked').value === 'ula') return 48;
+  try {
+    return parseIPv6Cidr(ownInput.value).prefix;
+  } catch {
+    return null;
+  }
+}
+
+function updateSizeOptions() {
+  const basePrefix = currentBasePrefixForPlan();
+
+  if (basePrefix === null) {
+    Array.from(planSize.options).forEach((opt) => { opt.disabled = false; });
+    planSizeHint.hidden = true;
+    return;
+  }
+
+  let anyEnabled = false;
+  let firstEnabledValue = null;
+  Array.from(planSize.options).forEach((opt) => {
+    const disabled = Number(opt.value) <= basePrefix;
+    opt.disabled = disabled;
+    if (!disabled) {
+      anyEnabled = true;
+      if (firstEnabledValue === null) firstEnabledValue = opt.value;
+    }
+  });
+
+  if (planSize.options[planSize.selectedIndex].disabled && firstEnabledValue !== null) {
+    planSize.value = firstEnabledValue;
+  }
+
+  const isUla = document.querySelector('input[name="v6-source"]:checked').value === 'ula';
+  planSizeHint.hidden = false;
+  if (!anyEnabled) {
+    planSizeHint.className = 'prefix-hint hint-warn';
+    planSizeHint.textContent = t('Tu prefijo base es /{base}: ningún tamaño de la lista cabe ahí. Usa un prefijo base más pequeño (número menor) en el paso 1.', { base: basePrefix });
+  } else if (isUla) {
+    planSizeHint.className = 'prefix-hint hint-info';
+    planSizeHint.textContent = t('Una red privada (ULA) siempre es un /48 completo, así que no puedes sacar subredes /48 de adentro de ella (lo que no cabe aparece atenuado). Si de verdad necesitas subredes /48 (por ejemplo, una por sucursal), elige "Ya tengo un prefijo" arriba y escribe un bloque más grande, como /32 o /40.');
+  } else {
+    planSizeHint.className = 'prefix-hint hint-info';
+    planSizeHint.textContent = t('Tu prefijo base es /{base}, así que el tamaño aquí debe ser mayor a ese número; lo que no cabe aparece atenuado.', { base: basePrefix });
+  }
+}
+
 document.querySelectorAll('input[name="v6-source"]').forEach((radio) => {
   radio.addEventListener('change', () => {
     const own = document.querySelector('input[name="v6-source"]:checked').value === 'own';
     ulaBox.hidden = own;
     ownBox.hidden = !own;
+    updateSizeOptions();
   });
 });
+
+ownInput.addEventListener('input', updateSizeOptions);
 
 $('v6-ula-regen').addEventListener('click', generateUla);
 
@@ -381,9 +436,9 @@ function paintPlanResult() {
 }
 
 generateUla();
-addPlanRow('Usuarios', '10');
-addPlanRow('Servidores', '20');
-addPlanRow('Invitados', '30');
+addPlanRow();
+addPlanRow();
+updateSizeOptions();
 
 // Re-paint whatever is currently on screen (built with t() at render time, so
 // it stays baked in the old language otherwise).
@@ -394,4 +449,5 @@ window.addEventListener('ipcalc:lang', () => {
   }
   if (lastSplitPrefix !== null) paintSplitList(lastSplitPrefix);
   if (lastPlan) paintPlanResult();
+  if (!planSizeHint.hidden) updateSizeOptions();
 });

@@ -555,11 +555,8 @@ growthSelect.addEventListener('change', updateHint);
 modeSelect.addEventListener('change', updateHint);
 
 showModeInfo();
-addRow('Usuarios', '10', '250');
-addRow('Servidores', '20', '60');
-addRow('Voz', '30', '100');
-addRow('Invitados', '40', '120');
-addRow('Administración', '50', '12');
+addRow();
+addRow();
 
 // Re-paint the currently shown plan (built with t() at render time, so it
 // stays baked in the old language otherwise).

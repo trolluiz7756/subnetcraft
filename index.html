@@ -4,13 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SubnetCraft — Planifica, divide y documenta redes IP</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self';" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
   <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=43" />
+  <link rel="stylesheet" href="style.css?v=52" />
 </head>
 <body>
   <div class="bg-grid" aria-hidden="true"></div>
@@ -24,7 +22,12 @@
       </div>
     </div>
     <div class="header-controls">
-      <nav class="tabs">
+      <button type="button" id="tabs-toggle" class="tabs-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="tabs-menu" aria-label="Menú de secciones" title="Menú de secciones">
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+        <span class="hamburger-bar"></span>
+      </button>
+      <nav class="tabs" id="tabs-menu">
         <button type="button" class="tab-btn active" data-tab="splitter">
           <span class="tab-index">01</span> Divisor visual
         </button>
@@ -154,39 +157,42 @@
           </ul>
         </details>
 
-        <div class="plan-card">
-          <h3>1. Tu prefijo base</h3>
-          <div class="plan-choice">
-            <label class="choice"><input type="radio" name="v6-source" value="ula" checked /> Red privada propia (ULA). Recomendado para empezar, laboratorio o red interna.</label>
-            <label class="choice"><input type="radio" name="v6-source" value="own" /> Ya tengo un prefijo (de mi proveedor o de mi organización).</label>
+        <div class="v6-plan-row">
+          <div class="plan-card">
+            <h3>1. Tu prefijo base</h3>
+            <div class="plan-choice">
+              <label class="choice"><input type="radio" name="v6-source" value="ula" checked /> Red privada propia (ULA). Recomendado para empezar, laboratorio o red interna.</label>
+              <label class="choice"><input type="radio" name="v6-source" value="own" /> Ya tengo un prefijo (de mi proveedor o de mi organización).</label>
+            </div>
+            <div id="v6-ula-box" class="plan-box">
+              <span class="mono plan-base" id="v6-ula-value"></span>
+              <button type="button" id="v6-ula-regen" class="btn-tool">Generar otro</button>
+              <p class="tool-note">Se genera al azar, así que es único para ti. Guárdalo: es tu identificador de red privada.</p>
+            </div>
+            <div id="v6-own-box" class="plan-box" hidden>
+              <input id="v6-own-input" type="text" placeholder="2001:db8:1234::/48" autocomplete="off" />
+              <p class="tool-note">Tu proveedor normalmente te da un /48 o un /56. Escríbelo con su prefijo, tal como te lo entregaron.</p>
+            </div>
           </div>
-          <div id="v6-ula-box" class="plan-box">
-            <span class="mono plan-base" id="v6-ula-value"></span>
-            <button type="button" id="v6-ula-regen" class="btn-tool">Generar otro</button>
-            <p class="tool-note">Se genera al azar, así que es único para ti. Guárdalo: es tu identificador de red privada.</p>
-          </div>
-          <div id="v6-own-box" class="plan-box" hidden>
-            <input id="v6-own-input" type="text" placeholder="2001:db8:1234::/48" autocomplete="off" />
-            <p class="tool-note">Tu proveedor normalmente te da un /48 o un /56. Escríbelo con su prefijo, tal como te lo entregaron.</p>
-          </div>
-        </div>
 
-        <div class="plan-card">
-          <h3>2. Tus subredes (una por VLAN o red)</h3>
-          <div id="v6-plan-rows"></div>
-          <button type="button" id="v6-plan-add" class="btn-tool">+ Agregar subred</button>
-          <label class="choice choice-inline"><input type="checkbox" id="v6-plan-usevlan" /> Usar el número de VLAN como ID de subred (la VLAN 10 quedaría como <span class="mono">…:a::/64</span>)</label>
-        </div>
+          <div class="plan-card">
+            <h3>2. Tus subredes (una por VLAN o red)</h3>
+            <div id="v6-plan-rows"></div>
+            <button type="button" id="v6-plan-add" class="btn-tool">+ Agregar subred</button>
+            <label class="choice choice-inline"><input type="checkbox" id="v6-plan-usevlan" /> Usar el número de VLAN como ID de subred (la VLAN 10 quedaría como <span class="mono">…:a::/64</span>)</label>
+          </div>
 
-        <div class="plan-card">
-          <h3>3. Tamaño de cada subred</h3>
-          <select id="v6-plan-size" aria-label="Tamaño de cada subred">
-            <option value="64">/64 · una LAN o VLAN (recomendado)</option>
-            <option value="60">/60 · hasta 16 LAN por cada subred</option>
-            <option value="56">/56 · hasta 256 LAN por cada subred</option>
-            <option value="48">/48 · un sitio completo por cada subred</option>
-          </select>
-          <p class="tool-note">Si dudas, deja /64. Las funciones automáticas de IPv6 (SLAAC) requieren que cada LAN sea un /64.</p>
+          <div class="plan-card">
+            <h3>3. Tamaño de cada subred</h3>
+            <select id="v6-plan-size" aria-label="Tamaño de cada subred">
+              <option value="64">/64 · una LAN o VLAN (recomendado)</option>
+              <option value="60">/60 · hasta 16 LAN por cada subred</option>
+              <option value="56">/56 · hasta 256 LAN por cada subred</option>
+              <option value="48">/48 · un sitio completo por cada subred</option>
+            </select>
+            <p id="v6-plan-size-hint" class="prefix-hint" hidden></p>
+            <p class="tool-note">Si dudas, deja /64. Las funciones automáticas de IPv6 (SLAAC) requieren que cada LAN sea un /64.</p>
+          </div>
         </div>
 
         <button type="button" id="v6-plan-generate" class="btn-primary">Generar mi plan</button>
@@ -421,12 +427,12 @@
     </section>
   </main>
 
-  <script type="module" src="i18n.js?v=43"></script>
-  <script type="module" src="calculator.js?v=43"></script>
-  <script type="module" src="ipv6.js?v=43"></script>
-  <script type="module" src="tools.js?v=43"></script>
-  <script type="module" src="planner.js?v=43"></script>
-  <script type="module" src="subnet-splitter.js?v=43"></script>
-  <script type="module" src="main.js?v=43"></script>
+  <script type="module" src="i18n.js?v=52"></script>
+  <script type="module" src="calculator.js?v=52"></script>
+  <script type="module" src="ipv6.js?v=52"></script>
+  <script type="module" src="tools.js?v=52"></script>
+  <script type="module" src="planner.js?v=52"></script>
+  <script type="module" src="subnet-splitter.js?v=52"></script>
+  <script type="module" src="main.js?v=52"></script>
 </body>
 </html>

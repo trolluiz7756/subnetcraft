@@ -16,6 +16,38 @@ tabButtons.forEach((btn) => {
 
 window.addEventListener('ipcalc:show-tab', (e) => showTab(e.detail));
 
+// ---------- Mobile hamburger menu (collapses the tab row on narrow screens) ----------
+const tabsToggle = document.getElementById('tabs-toggle');
+const tabsMenu = document.getElementById('tabs-menu');
+
+function setTabsMenu(open) {
+  tabsMenu.classList.toggle('open', open);
+  tabsToggle.setAttribute('aria-expanded', String(open));
+}
+
+tabsToggle.addEventListener('click', () => setTabsMenu(!tabsMenu.classList.contains('open')));
+
+tabButtons.forEach((btn) => btn.addEventListener('click', () => setTabsMenu(false)));
+
+document.addEventListener('click', (e) => {
+  if (tabsMenu.classList.contains('open') && !e.target.closest('.tabs') && !e.target.closest('#tabs-toggle')) {
+    setTabsMenu(false);
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && tabsMenu.classList.contains('open')) {
+    setTabsMenu(false);
+    tabsToggle.focus();
+  }
+});
+
+// Resizing past the mobile breakpoint (e.g. rotating a tablet, or a devtools
+// resize) shouldn't leave the menu stuck open behind a now-hidden hamburger.
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 720) setTabsMenu(false);
+});
+
 // Shared links open on the tab that produced them.
 if (location.hash.startsWith('#s=')) showTab('splitter');
 else if (location.hash.startsWith('#c=')) showTab('calculator');
