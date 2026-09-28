@@ -144,7 +144,6 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 20px;
 }
 
@@ -174,7 +173,13 @@ body {
   letter-spacing: 0.14em;
 }
 
-.header-controls {
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.utility-controls {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -188,6 +193,9 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   backdrop-filter: blur(10px);
+  /* Groups .tabs + .utility-controls together on the right, brand-row on the
+     left, without needing justify-content: space-between on the parent. */
+  margin-left: auto;
 }
 
 .tabs-toggle {
@@ -215,15 +223,21 @@ body {
 .tabs-toggle[aria-expanded="true"] .hamburger-bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
 /* Phone widths: collapse the tab row behind a hamburger menu instead of
-   wrapping every section button onto the header. */
+   wrapping every section button onto the header. Three stacked rows, top to
+   bottom: help/language/theme, then the brand with the hamburger on its
+   right, then the tab list once the hamburger opens it. */
 @media (max-width: 720px) {
   .tabs-toggle { display: flex; }
+
+  .brand-row { width: 100%; justify-content: space-between; order: 0; }
+  .utility-controls { width: 100%; order: -1; margin-left: 0; }
   .tabs {
     display: none;
     width: 100%;
     flex-direction: column;
     gap: 2px;
     order: 10;
+    margin-left: 0;
   }
   .tabs.open { display: flex; }
   .tabs .tab-btn { justify-content: flex-start; width: 100%; padding: 12px 14px; }
@@ -795,6 +809,10 @@ button[type="submit"]:hover, .panel-form > button:not(.btn-secondary):hover {
 
 .btn-tool:hover { border-color: var(--accent); color: var(--accent); }
 .btn-tool-danger:hover { border-color: var(--error-text); color: var(--error-text); }
+.btn-tool:disabled { opacity: 0.4; cursor: not-allowed; border-color: var(--border); color: var(--muted); }
+.btn-tool:disabled:hover { border-color: var(--border); color: var(--muted); }
+
+.undo-group { display: inline-flex; gap: 8px; margin-left: auto; }
 
 .vlan-input { width: 84px; }
 .split-table td .vlan-input, .split-table td .note-input { padding: 7px 9px; font-size: 12px; }
@@ -803,6 +821,12 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
 main:has(#tab-splitter.active) { max-width: 1600px; }
 
 #split-form .field { min-width: 140px; flex: 1 1 140px; }
+@media (max-width: 560px) {
+  /* Beats the ID rule above at this width: flex-basis:140px would otherwise
+     become a 140px minimum HEIGHT per field once the form stacks into a
+     single column, leaving huge gaps between fields. */
+  #split-form .field { min-width: 0; flex: 1 1 auto; }
+}
 
 .split-table th, .split-table td { padding: 8px 10px; }
 .split-table td.mono { font-size: 12px; }
@@ -810,7 +834,6 @@ main:has(#tab-splitter.active) { max-width: 1600px; }
 .split-table td .note-input { width: 120px; }
 
 /* Header tabs: allow wrapping with four entries */
-.header-controls { flex-wrap: wrap; }
 .tabs { flex-wrap: wrap; }
 
 /* Saved subnet actions */

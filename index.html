@@ -8,25 +8,26 @@
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
   <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=52" />
+  <link rel="stylesheet" href="style.css?v=54" />
 </head>
 <body>
   <div class="bg-grid" aria-hidden="true"></div>
 
   <header class="page-header">
-    <div class="brand">
-      <img class="brand-logo" src="assets/logo-header.png" alt="Logo de SubnetCraft" />
-      <div class="brand-text">
-        <span class="brand-mark">Subnet<span class="brand-craft">Craft</span></span>
-        <span class="brand-tag">Planifica, divide y documenta redes IP</span>
+    <div class="brand-row">
+      <div class="brand">
+        <img class="brand-logo" src="assets/logo-header.png" alt="Logo de SubnetCraft" />
+        <div class="brand-text">
+          <span class="brand-mark">Subnet<span class="brand-craft">Craft</span></span>
+          <span class="brand-tag">Planifica, divide y documenta redes IP</span>
+        </div>
       </div>
-    </div>
-    <div class="header-controls">
       <button type="button" id="tabs-toggle" class="tabs-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="tabs-menu" aria-label="Menú de secciones" title="Menú de secciones">
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
         <span class="hamburger-bar"></span>
       </button>
+    </div>
       <nav class="tabs" id="tabs-menu">
         <button type="button" class="tab-btn active" data-tab="splitter">
           <span class="tab-index">01</span> Divisor visual
@@ -44,45 +45,46 @@
           <span class="tab-index">05</span> Herramientas
         </button>
       </nav>
-      <div class="help-wrap">
-        <button type="button" id="help-toggle" class="help-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="help-menu" aria-label="Ayuda" title="Ayuda: ¿qué necesitas hacer? Atajos y explicaciones">
-          <span class="help-dot">?</span>
-        </button>
-        <div id="help-menu" class="help-menu" hidden>
-          <div class="help-menu-title">¿Qué necesitas hacer?</div>
-        <button type="button" class="guide-item" data-goto="planner">
-          <span class="guide-title">Repartir una red entre áreas</span>
-          <span class="guide-desc">Dices cuántos equipos tiene cada VLAN y la app calcula las subredes y la configuración.</span>
-        </button>
-        <button type="button" class="guide-item" data-goto="splitter">
-          <span class="guide-title">Dividir una red a mano</span>
-          <span class="guide-desc">Haz clic para partir una red en mitades y ver el árbol de subredes.</span>
-        </button>
-        <button type="button" class="guide-item" data-goto="calculator">
-          <span class="guide-title">Saber todo sobre una IP</span>
-          <span class="guide-desc">Red, broadcast, máscara y rango de equipos de una dirección IPv4.</span>
-        </button>
-        <button type="button" class="guide-item" data-goto="ipv6">
-          <span class="guide-title">Empezar con IPv6</span>
-          <span class="guide-desc">Si no sabes de prefijos, un plan guiado te da el direccionamiento listo.</span>
-        </button>
-        <button type="button" class="guide-item" data-goto="tools">
-          <span class="guide-title">Comprobar o resumir redes</span>
-          <span class="guide-desc">¿Está esta IP en la red?, resumen de rutas, traslapes y conversor de máscaras.</span>
-        </button>
+      <div class="utility-controls">
+        <div class="help-wrap">
+          <button type="button" id="help-toggle" class="help-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="help-menu" aria-label="Ayuda" title="Ayuda: ¿qué necesitas hacer? Atajos y explicaciones">
+            <span class="help-dot">?</span>
+          </button>
+          <div id="help-menu" class="help-menu" hidden>
+            <div class="help-menu-title">¿Qué necesitas hacer?</div>
+          <button type="button" class="guide-item" data-goto="planner">
+            <span class="guide-title">Repartir una red entre áreas</span>
+            <span class="guide-desc">Dices cuántos equipos tiene cada VLAN y la app calcula las subredes y la configuración.</span>
+          </button>
+          <button type="button" class="guide-item" data-goto="splitter">
+            <span class="guide-title">Dividir una red a mano</span>
+            <span class="guide-desc">Haz clic para partir una red en mitades y ver el árbol de subredes.</span>
+          </button>
+          <button type="button" class="guide-item" data-goto="calculator">
+            <span class="guide-title">Saber todo sobre una IP</span>
+            <span class="guide-desc">Red, broadcast, máscara y rango de equipos de una dirección IPv4.</span>
+          </button>
+          <button type="button" class="guide-item" data-goto="ipv6">
+            <span class="guide-title">Empezar con IPv6</span>
+            <span class="guide-desc">Si no sabes de prefijos, un plan guiado te da el direccionamiento listo.</span>
+          </button>
+          <button type="button" class="guide-item" data-goto="tools">
+            <span class="guide-title">Comprobar o resumir redes</span>
+            <span class="guide-desc">¿Está esta IP en la red?, resumen de rutas, traslapes y conversor de máscaras.</span>
+          </button>
+          </div>
         </div>
+        <button type="button" id="lang-toggle" class="lang-toggle" aria-label="Cambiar idioma (español / inglés)" title="Idioma">ES</button>
+        <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Cambiar tema claro/oscuro" title="Cambiar tema">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path>
+          </svg>
+        </button>
       </div>
-      <button type="button" id="lang-toggle" class="lang-toggle" aria-label="Cambiar idioma (español / inglés)" title="Idioma">ES</button>
-      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Cambiar tema claro/oscuro" title="Cambiar tema">
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="4"></circle>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
-        </svg>
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path>
-        </svg>
-      </button>
-    </div>
   </header>
 
   <main>
@@ -377,6 +379,10 @@
         </div>
         <button type="submit">Generar</button>
         <button type="button" id="split-reset" class="btn-secondary">Reiniciar</button>
+        <span class="undo-group">
+          <button type="button" id="split-undo" class="btn-tool" title="Deshacer (Ctrl+Z)" aria-label="Deshacer" disabled>↺ Deshacer</button>
+          <button type="button" id="split-redo" class="btn-tool" title="Rehacer (Ctrl+Y)" aria-label="Rehacer" disabled>↻ Rehacer</button>
+        </span>
       </form>
       <p id="split-mode-info" class="mode-info"></p>
       <p id="split-error" class="error-box" hidden></p>
@@ -427,12 +433,12 @@
     </section>
   </main>
 
-  <script type="module" src="i18n.js?v=52"></script>
-  <script type="module" src="calculator.js?v=52"></script>
-  <script type="module" src="ipv6.js?v=52"></script>
-  <script type="module" src="tools.js?v=52"></script>
-  <script type="module" src="planner.js?v=52"></script>
-  <script type="module" src="subnet-splitter.js?v=52"></script>
-  <script type="module" src="main.js?v=52"></script>
+  <script type="module" src="i18n.js?v=54"></script>
+  <script type="module" src="calculator.js?v=54"></script>
+  <script type="module" src="ipv6.js?v=54"></script>
+  <script type="module" src="tools.js?v=54"></script>
+  <script type="module" src="planner.js?v=54"></script>
+  <script type="module" src="subnet-splitter.js?v=54"></script>
+  <script type="module" src="main.js?v=54"></script>
 </body>
 </html>
