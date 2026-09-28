@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SubnetCraft — Planifica, divide y documenta redes IP</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=43" />
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="page-header">
+    <div class="brand">
+      <img class="brand-logo" src="assets/logo-header.png" alt="Logo de SubnetCraft" />
+      <div class="brand-text">
+        <span class="brand-mark">Subnet<span class="brand-craft">Craft</span></span>
+        <span class="brand-tag">Planifica, divide y documenta redes IP</span>
+      </div>
+    </div>
+    <div class="header-controls">
+      <nav class="tabs">
+        <button type="button" class="tab-btn active" data-tab="splitter">
+          <span class="tab-index">01</span> Divisor visual
+        </button>
+        <button type="button" class="tab-btn" data-tab="planner">
+          <span class="tab-index">02</span> Planificador VLSM
+        </button>
+        <button type="button" class="tab-btn" data-tab="calculator">
+          <span class="tab-index">03</span> Calculadora IPv4
+        </button>
+        <button type="button" class="tab-btn" data-tab="ipv6">
+          <span class="tab-index">04</span> Calculadora IPv6
+        </button>
+        <button type="button" class="tab-btn" data-tab="tools">
+          <span class="tab-index">05</span> Herramientas
+        </button>
+      </nav>
+      <div class="help-wrap">
+        <button type="button" id="help-toggle" class="help-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="help-menu" aria-label="Ayuda" title="Ayuda: ¿qué necesitas hacer? Atajos y explicaciones">
+          <span class="help-dot">?</span>
+        </button>
+        <div id="help-menu" class="help-menu" hidden>
+          <div class="help-menu-title">¿Qué necesitas hacer?</div>
+        <button type="button" class="guide-item" data-goto="planner">
+          <span class="guide-title">Repartir una red entre áreas</span>
+          <span class="guide-desc">Dices cuántos equipos tiene cada VLAN y la app calcula las subredes y la configuración.</span>
+        </button>
+        <button type="button" class="guide-item" data-goto="splitter">
+          <span class="guide-title">Dividir una red a mano</span>
+          <span class="guide-desc">Haz clic para partir una red en mitades y ver el árbol de subredes.</span>
+        </button>
+        <button type="button" class="guide-item" data-goto="calculator">
+          <span class="guide-title">Saber todo sobre una IP</span>
+          <span class="guide-desc">Red, broadcast, máscara y rango de equipos de una dirección IPv4.</span>
+        </button>
+        <button type="button" class="guide-item" data-goto="ipv6">
+          <span class="guide-title">Empezar con IPv6</span>
+          <span class="guide-desc">Si no sabes de prefijos, un plan guiado te da el direccionamiento listo.</span>
+        </button>
+        <button type="button" class="guide-item" data-goto="tools">
+          <span class="guide-title">Comprobar o resumir redes</span>
+          <span class="guide-desc">¿Está esta IP en la red?, resumen de rutas, traslapes y conversor de máscaras.</span>
+        </button>
+        </div>
+      </div>
+      <button type="button" id="lang-toggle" class="lang-toggle" aria-label="Cambiar idioma (español / inglés)" title="Idioma">ES</button>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Cambiar tema claro/oscuro" title="Cambiar tema">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section id="tab-calculator" class="tab-panel">
+      <p class="section-hint">Ingresa una IP y su prefijo CIDR o máscara para obtener el desglose completo de la red.</p>
+
+      <div class="calc-layout">
+        <aside class="saved-panel">
+          <h2 class="saved-panel-title">Subredes guardadas</h2>
+          <ul id="saved-list" class="saved-list"></ul>
+          <p id="saved-empty" class="saved-empty">Aún no has guardado ninguna subred. Calcula una y dale a "Guardar".</p>
+        </aside>
+
+        <div class="calc-main">
+          <form id="calc-form" class="panel-form">
+            <div class="field">
+              <label for="calc-ip">Dirección IP</label>
+              <input id="calc-ip" type="text" placeholder="192.168.1.10 o 192.168.1.10/24" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="calc-mask">Máscara o prefijo CIDR<span class="help" tabindex="0" role="note" aria-label="Puedes escribir el prefijo (24 o /24) o la máscara (255.255.255.0). También vale escribirlo todo junto en el campo de la IP: 192.168.1.10/24." data-help="Puedes escribir el prefijo (24 o /24) o la máscara (255.255.255.0). También vale escribirlo todo junto en el campo de la IP: 192.168.1.10/24.">?</span></label>
+              <input id="calc-mask" type="text" placeholder="24 o 255.255.255.0" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="calc-vlan">VLAN (opcional)<span class="help" tabindex="0" role="note" aria-label="Una etiqueta para reconocer esta subred cuando la guardes, por ejemplo 10 - Ventas. No cambia el cálculo." data-help="Una etiqueta para reconocer esta subred cuando la guardes, por ejemplo 10 - Ventas. No cambia el cálculo.">?</span></label>
+              <input id="calc-vlan" type="text" placeholder="ej. 10 - Ventas" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="calc-gw">Gateway sugerido<span class="help" tabindex="0" role="note" aria-label="El gateway es la dirección del router de esa red, por donde salen los equipos hacia otras redes. Por costumbre suele ser la primera o la última dirección utilizable." data-help="El gateway es la dirección del router de esa red, por donde salen los equipos hacia otras redes. Por costumbre suele ser la primera o la última dirección utilizable.">?</span></label>
+              <select id="calc-gw">
+                <option value="first">Primera IP útil</option>
+                <option value="last">Última IP útil</option>
+              </select>
+            </div>
+            <button type="submit">Calcular</button>
+          </form>
+          <div class="example-row">
+            <span class="bar-label">Prueba con un ejemplo</span>
+            <button type="button" class="btn-tool v4-example" data-value="192.168.1.10/24">Red doméstica /24</button>
+            <button type="button" class="btn-tool v4-example" data-value="10.20.30.1/22">Oficina /22</button>
+            <button type="button" class="btn-tool v4-example" data-value="10.0.0.1/30">Enlace punto a punto /30</button>
+          </div>
+          <p id="calc-error" class="error-box" hidden></p>
+
+          <div id="calc-toolbar" class="calc-toolbar" hidden>
+            <button type="button" id="calc-share" class="btn-tool">Copiar enlace</button>
+            <button type="button" id="calc-save" class="btn-save">Guardar esta subred</button>
+          </div>
+          <div id="calc-results" class="results-grid" hidden></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-ipv6" class="tab-panel">
+      <div class="subtabs" role="tablist">
+        <button type="button" class="subtab active" data-subtab="plan">Plan guiado (empieza aquí)</button>
+        <button type="button" class="subtab" data-subtab="calc">Calculadora</button>
+      </div>
+
+      <div id="v6-pane-plan" class="subpane active">
+        <p class="section-hint">¿Primera vez con IPv6? En tres pasos obtienes un plan de direccionamiento listo para usar, sin necesidad de entender los prefijos de antemano.</p>
+
+        <details class="glossary">
+          <summary>Lo mínimo que necesitas saber sobre IPv6</summary>
+          <ul>
+            <li><strong>Dirección:</strong> son 128 bits escritos en 8 grupos hexadecimales, por ejemplo <span class="mono">2001:db8:1::5</span>. Los <span class="mono">::</span> abrevian grupos de ceros.</li>
+            <li><strong>Prefijo (/48, /64…):</strong> cuántos bits del inicio identifican la red. El resto identifica a los equipos dentro de ella.</li>
+            <li><strong>/64:</strong> es el tamaño estándar de una LAN o VLAN. Aunque sea enorme (18 trillones de direcciones), es lo normal: no hay que ahorrar direcciones.</li>
+            <li><strong>/48:</strong> lo que suele recibir un sitio completo. Contiene 65.536 redes /64, más que suficiente para dividirlo por VLAN.</li>
+            <li><strong>ULA (<span class="mono">fd…</span>):</strong> es el equivalente de las IPs privadas de IPv4 (192.168.x.x). Sirve para redes internas y laboratorio; no se enruta en Internet.</li>
+            <li><strong>Equipos:</strong> normalmente se configuran solos (SLAAC o DHCPv6). No hay broadcast ni hace falta calcular rangos de hosts.</li>
+          </ul>
+        </details>
+
+        <div class="plan-card">
+          <h3>1. Tu prefijo base</h3>
+          <div class="plan-choice">
+            <label class="choice"><input type="radio" name="v6-source" value="ula" checked /> Red privada propia (ULA). Recomendado para empezar, laboratorio o red interna.</label>
+            <label class="choice"><input type="radio" name="v6-source" value="own" /> Ya tengo un prefijo (de mi proveedor o de mi organización).</label>
+          </div>
+          <div id="v6-ula-box" class="plan-box">
+            <span class="mono plan-base" id="v6-ula-value"></span>
+            <button type="button" id="v6-ula-regen" class="btn-tool">Generar otro</button>
+            <p class="tool-note">Se genera al azar, así que es único para ti. Guárdalo: es tu identificador de red privada.</p>
+          </div>
+          <div id="v6-own-box" class="plan-box" hidden>
+            <input id="v6-own-input" type="text" placeholder="2001:db8:1234::/48" autocomplete="off" />
+            <p class="tool-note">Tu proveedor normalmente te da un /48 o un /56. Escríbelo con su prefijo, tal como te lo entregaron.</p>
+          </div>
+        </div>
+
+        <div class="plan-card">
+          <h3>2. Tus subredes (una por VLAN o red)</h3>
+          <div id="v6-plan-rows"></div>
+          <button type="button" id="v6-plan-add" class="btn-tool">+ Agregar subred</button>
+          <label class="choice choice-inline"><input type="checkbox" id="v6-plan-usevlan" /> Usar el número de VLAN como ID de subred (la VLAN 10 quedaría como <span class="mono">…:a::/64</span>)</label>
+        </div>
+
+        <div class="plan-card">
+          <h3>3. Tamaño de cada subred</h3>
+          <select id="v6-plan-size" aria-label="Tamaño de cada subred">
+            <option value="64">/64 · una LAN o VLAN (recomendado)</option>
+            <option value="60">/60 · hasta 16 LAN por cada subred</option>
+            <option value="56">/56 · hasta 256 LAN por cada subred</option>
+            <option value="48">/48 · un sitio completo por cada subred</option>
+          </select>
+          <p class="tool-note">Si dudas, deja /64. Las funciones automáticas de IPv6 (SLAAC) requieren que cada LAN sea un /64.</p>
+        </div>
+
+        <button type="button" id="v6-plan-generate" class="btn-primary">Generar mi plan</button>
+        <p id="v6-plan-error" class="error-box" hidden></p>
+        <div id="v6-plan-result" class="plan-result" hidden></div>
+      </div>
+
+      <div id="v6-pane-calc" class="subpane">
+        <p class="section-hint">Analiza cualquier dirección o prefijo IPv6 y divídelo en subredes más pequeñas.</p>
+        <form id="v6-form" class="panel-form">
+          <div class="field">
+            <label for="v6-input">Dirección IPv6 / prefijo</label>
+            <input id="v6-input" type="text" placeholder="2001:db8:abcd::1/48" autocomplete="off" />
+          </div>
+          <button type="submit">Calcular</button>
+        </form>
+        <div class="example-row">
+          <span class="bar-label">Prueba con un ejemplo</span>
+          <button type="button" class="btn-tool v6-example" data-value="fd12:3456:789a::/48">Red privada (ULA) /48</button>
+          <button type="button" class="btn-tool v6-example" data-value="2001:db8:1::/56">Oficina /56</button>
+          <button type="button" class="btn-tool v6-example" data-value="2001:db8:1:1::/64">Una LAN /64</button>
+        </div>
+        <p id="v6-note" class="mode-info"></p>
+        <p id="v6-error" class="error-box" hidden></p>
+        <div id="v6-results" class="results-grid" hidden></div>
+
+        <div id="v6-split" class="v6-split" hidden>
+          <form id="v6-split-form" class="panel-form">
+            <div class="field">
+              <label for="v6-split-prefix">Dividir en subredes de prefijo</label>
+              <input id="v6-split-prefix" type="number" min="1" max="128" placeholder="64" autocomplete="off" />
+            </div>
+            <button type="submit">Listar subredes</button>
+          </form>
+          <p id="v6-split-info" class="mode-info"></p>
+          <div class="split-table-wrap">
+            <table class="split-table">
+              <thead>
+                <tr><th>#</th><th>Subred</th><th>Primera dirección</th><th>Última dirección</th></tr>
+              </thead>
+              <tbody id="v6-split-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-tools" class="tab-panel">
+      <p class="section-hint">Utilidades rápidas de IPv4.</p>
+      <div class="tools-grid">
+        <div class="tool-card">
+          <h3>¿Esta IP pertenece a la red?</h3>
+          <form id="t-contains-form" class="tool-form">
+            <input id="t-contains-ip" type="text" placeholder="IP, ej. 10.1.2.3" autocomplete="off" />
+            <input id="t-contains-net" type="text" placeholder="Red, ej. 10.0.0.0/8" autocomplete="off" />
+            <button type="submit">Comprobar</button>
+          </form>
+          <div id="t-contains-out" class="tool-out" hidden></div>
+        </div>
+
+        <div class="tool-card">
+          <h3>Convertidor de máscara / wildcard / CIDR</h3>
+          <form id="t-conv-form" class="tool-form">
+            <input id="t-conv-input" type="text" placeholder="/24, 255.255.255.0 o 0.0.0.255" autocomplete="off" />
+            <button type="submit">Convertir</button>
+          </form>
+          <div id="t-conv-out" class="tool-out" hidden></div>
+        </div>
+
+        <div class="tool-card">
+          <h3>Resumen de rutas (agregación)</h3>
+          <form id="t-agg-form" class="tool-form">
+            <textarea id="t-agg-input" rows="5" placeholder="Una red por línea&#10;192.168.0.0/24&#10;192.168.1.0/24"></textarea>
+            <button type="submit">Resumir</button>
+          </form>
+          <div id="t-agg-out" class="tool-out" hidden></div>
+        </div>
+
+        <div class="tool-card">
+          <h3>Detección de traslapes</h3>
+          <form id="t-ovl-form" class="tool-form">
+            <textarea id="t-ovl-input" rows="5" placeholder="Una red por línea (con etiqueta opcional)&#10;10.0.0.0/16 Oficinas&#10;10.0.5.0/24 Voz"></textarea>
+            <div class="tool-actions">
+              <button type="submit">Buscar traslapes</button>
+              <button type="button" id="t-ovl-load" class="btn-tool">Cargar subredes guardadas</button>
+            </div>
+          </form>
+          <div id="t-ovl-out" class="tool-out" hidden></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-planner" class="tab-panel">
+      <p class="section-hint">Dile a la app cuántos equipos necesita cada red y calculará el tamaño exacto de cada subred, acomodándolas sin traslapes (VLSM). Después puedes sacar la configuración lista para tus equipos.</p>
+
+      <div class="plan-layout">
+        <div class="plan-left">
+      <div class="panel-form plan-settings">
+        <div class="field">
+          <label for="pl-ip">Red base<span class="help" tabindex="0" role="note" aria-label="La red grande de la que se reparten todas las subredes, por ejemplo 10.10.0.0 con prefijo 22." data-help="La red grande de la que se reparten todas las subredes, por ejemplo 10.10.0.0 con prefijo 22.">?</span></label>
+          <input id="pl-ip" type="text" value="10.10.0.0" placeholder="10.10.0.0" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="pl-prefix">Prefijo CIDR<span class="help" tabindex="0" role="note" aria-label="El prefijo indica cuántos bits del inicio de la IP identifican la red. Por ejemplo /24 equivale a la máscara 255.255.255.0 y deja 254 direcciones para equipos. Cuanto mayor es el número, más pequeña es la red." data-help="El prefijo indica cuántos bits del inicio de la IP identifican la red. Por ejemplo /24 equivale a la máscara 255.255.255.0 y deja 254 direcciones para equipos. Cuanto mayor es el número, más pequeña es la red.">?</span></label>
+          <input id="pl-prefix" type="number" min="0" max="30" value="22" placeholder="22" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="pl-mode">Modo<span class="help" tabindex="0" role="note" aria-label="Estándar sirve para redes locales. AWS, Azure y OCI reservan más direcciones en cada subred y tienen un tamaño mínimo, así que los equipos disponibles cambian." data-help="Estándar sirve para redes locales. AWS, Azure y OCI reservan más direcciones en cada subred y tienen un tamaño mínimo, así que los equipos disponibles cambian.">?</span></label>
+          <select id="pl-mode">
+            <option value="standard">Estándar</option>
+            <option value="aws">AWS</option>
+            <option value="azure">Azure</option>
+            <option value="oci">OCI</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pl-growth">Margen de crecimiento<span class="help" tabindex="0" role="note" aria-label="Espacio extra por si tu red crece. Con 25 %, una red de 100 equipos se planifica como si fueran 125." data-help="Espacio extra por si tu red crece. Con 25 %, una red de 100 equipos se planifica como si fueran 125.">?</span></label>
+          <select id="pl-growth">
+            <option value="0">Ninguno</option>
+            <option value="25">25 %</option>
+            <option value="50">50 %</option>
+            <option value="100">100 % (el doble)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pl-gw">Gateway sugerido<span class="help" tabindex="0" role="note" aria-label="El gateway es la dirección del router de esa red, por donde salen los equipos hacia otras redes. Por costumbre suele ser la primera o la última dirección utilizable." data-help="El gateway es la dirección del router de esa red, por donde salen los equipos hacia otras redes. Por costumbre suele ser la primera o la última dirección utilizable.">?</span></label>
+          <select id="pl-gw">
+            <option value="first">Primera IP útil</option>
+            <option value="last">Última IP útil</option>
+          </select>
+        </div>
+      </div>
+      <p id="pl-mode-info" class="mode-info"></p>
+
+        </div>
+        <div class="plan-right">
+      <div class="plan-card">
+        <h3>Redes que necesitas</h3>
+        <div id="pl-rows"></div>
+        <button type="button" id="pl-add" class="btn-tool">+ Agregar red</button>
+      </div>
+
+          <div class="plan-actions">
+      <button type="button" id="pl-generate" class="btn-primary">Calcular plan</button>
+      <div id="pl-hint" class="prefix-hint" hidden>
+        <span id="pl-hint-text"></span>
+        <button type="button" id="pl-hint-apply" class="btn-tool" hidden></button>
+      </div>
+          </div>
+        </div>
+      </div>
+      <p id="pl-error" class="error-box" hidden></p>
+      <div id="pl-result" class="plan-result" hidden></div>
+    </section>
+
+    <section id="tab-splitter" class="tab-panel active">
+      <p class="section-hint">Define una red base y divide o une bloques haciendo clic — como un árbol binario de subredes.</p>
+      <form id="split-form" class="panel-form">
+        <div class="field">
+          <label for="split-ip">Red base<span class="help" tabindex="0" role="note" aria-label="La red grande de la que se reparten todas las subredes, por ejemplo 10.10.0.0 con prefijo 22." data-help="La red grande de la que se reparten todas las subredes, por ejemplo 10.10.0.0 con prefijo 22.">?</span></label>
+          <input id="split-ip" type="text" placeholder="10.0.0.0" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="split-prefix">Prefijo CIDR<span class="help" tabindex="0" role="note" aria-label="El prefijo indica cuántos bits del inicio de la IP identifican la red. Por ejemplo /24 equivale a la máscara 255.255.255.0 y deja 254 direcciones para equipos. Cuanto mayor es el número, más pequeña es la red." data-help="El prefijo indica cuántos bits del inicio de la IP identifican la red. Por ejemplo /24 equivale a la máscara 255.255.255.0 y deja 254 direcciones para equipos. Cuanto mayor es el número, más pequeña es la red.">?</span></label>
+          <input id="split-prefix" type="number" min="0" max="30" placeholder="16" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="split-mode">Modo<span class="help" tabindex="0" role="note" aria-label="Estándar sirve para redes locales. AWS, Azure y OCI reservan más direcciones en cada subred y tienen un tamaño mínimo, así que los equipos disponibles cambian." data-help="Estándar sirve para redes locales. AWS, Azure y OCI reservan más direcciones en cada subred y tienen un tamaño mínimo, así que los equipos disponibles cambian.">?</span></label>
+          <select id="split-mode">
+            <option value="standard">Estándar</option>
+            <option value="aws">AWS</option>
+            <option value="azure">Azure</option>
+            <option value="oci">OCI</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="split-gw">Gateway sugerido<span class="help" tabindex="0" role="note" aria-label="El gateway es la dirección del router de esa red, por donde salen los equipos hacia otras redes. Por costumbre suele ser la primera o la última dirección utilizable." data-help="El gateway es la dirección del router de esa red, por donde salen los equipos hacia otras redes. Por costumbre suele ser la primera o la última dirección utilizable.">?</span></label>
+          <select id="split-gw">
+            <option value="first">Primera IP útil</option>
+            <option value="last">Última IP útil</option>
+          </select>
+        </div>
+        <button type="submit">Generar</button>
+        <button type="button" id="split-reset" class="btn-secondary">Reiniciar</button>
+      </form>
+      <p id="split-mode-info" class="mode-info"></p>
+      <p id="split-error" class="error-box" hidden></p>
+
+      <div class="project-bar">
+        <input id="project-name" type="text" placeholder="Nombre del proyecto" autocomplete="off" />
+        <button type="button" id="project-save" class="btn-tool">Guardar proyecto</button>
+        <select id="project-list" aria-label="Proyectos guardados">
+          <option value="">Proyectos guardados…</option>
+        </select>
+        <button type="button" id="project-load" class="btn-tool">Cargar</button>
+        <button type="button" id="project-delete" class="btn-tool btn-tool-danger">Eliminar</button>
+      </div>
+
+      <div class="split-table-wrap">
+        <table class="split-table">
+          <thead>
+            <tr>
+              <th>Subred (CIDR)</th>
+              <th>Rango de direcciones</th>
+              <th>IPs utilizables</th>
+              <th>Hosts</th>
+              <th>VLAN</th>
+              <th>Gateway</th>
+              <th>DHCP</th>
+              <th>Nota</th>
+              <th id="tree-head-cell" class="tree-head">
+                <span class="tree-legend">Clic: dividir / unir</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="split-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="project-bar">
+        <span class="bar-label">Imagen</span>
+        <button type="button" id="export-copy-img" class="btn-tool btn-tool-primary">Copiar imagen</button>
+        <button type="button" id="export-png" class="btn-tool">Descargar PNG (alta calidad)</button>
+        <button type="button" id="export-svg" class="btn-tool">Descargar SVG (vectorial)</button>
+        <span class="bar-label bar-label-gap">Datos</span>
+        <button type="button" id="export-copy" class="btn-tool">Copiar tabla</button>
+        <button type="button" id="export-csv" class="btn-tool">Exportar CSV</button>
+        <span class="project-spacer"></span>
+        <button type="button" id="send-calc" class="btn-tool">Enviar a calculadora</button>
+        <button type="button" id="share-link" class="btn-tool">Compartir enlace</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="i18n.js?v=43"></script>
+  <script type="module" src="calculator.js?v=43"></script>
+  <script type="module" src="ipv6.js?v=43"></script>
+  <script type="module" src="tools.js?v=43"></script>
+  <script type="module" src="planner.js?v=43"></script>
+  <script type="module" src="subnet-splitter.js?v=43"></script>
+  <script type="module" src="main.js?v=43"></script>
+</body>
+</html>

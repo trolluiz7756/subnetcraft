@@ -1,0 +1,17 @@
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+
+# Temporary test scaffolding used while developing (t.html, t-test.js, etc.)
+t.html
+t2.html
+t-*.js
+t-*.html
+
+# Logs
+*.log
