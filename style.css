@@ -107,6 +107,12 @@
 
 * { box-sizing: border-box; }
 
+/* Safety net: decorative absolutely-positioned bits (like the ? tooltips
+   below) can be wider than the viewport near an edge on narrow screens.
+   They stay invisible (opacity 0) until hovered/focused, but even invisible
+   they still count toward document width unless we clip it here. */
+html { overflow-x: hidden; }
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -114,6 +120,7 @@ body {
   background: var(--bg);
   color: var(--text);
   position: relative;
+  overflow-x: hidden;
 }
 
 .mono, input, .result-value, .tree-cell {
@@ -1113,6 +1120,18 @@ label.choice-inline { color: var(--muted); }
   z-index: 30;
 }
 .help:hover::after, .help:focus::after { opacity: 1; transform: none; }
+
+@media (max-width: 560px) {
+  /* Centered and tighter, so a badge near either edge doesn't push the
+     tooltip past the viewport (overflow-x: hidden on body would otherwise
+     just clip it when someone actually taps/focuses it). */
+  .help::after {
+    left: 50%;
+    max-width: min(240px, calc(100vw - 32px));
+    transform: translateX(-50%) translateY(4px);
+  }
+  .help:hover::after, .help:focus::after { transform: translateX(-50%) translateY(0); }
+}
 
 .help-toggle {
   display: flex;
