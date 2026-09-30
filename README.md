@@ -28,9 +28,11 @@ Everything runs in your browser. There is no backend, no build step, and no depe
 
 ### VLSM planner
 - Enter a name, VLAN and number of hosts per network, choose a growth margin (0 to 100 %), and get the exact subnet for each one, packed without gaps.
+- **Import a CSV** (name, VLAN, hosts) instead of typing rows by hand.
 - A live suggestion tells you whether your base prefix is too small, just right, or much larger than needed.
 - Usage bar with a legend, free-space blocks, and a table with mask, capacity, gateway, DHCP and usable range.
 - Generates **device configuration** for Cisco IOS, MikroTik RouterOS, FortiGate and Linux (iproute2 + dnsmasq) in Standard mode.
+- **Report / Print**: a clean, printable one-page summary (base network, usage, subnet table) — use your browser's print dialog to save it as PDF.
 
 ### IPv4 calculator
 - Accepts `192.168.1.10/24`, `192.168.1.10 255.255.255.0`, a `/24` prefix, a dotted mask, or a wildcard.
@@ -55,7 +57,8 @@ Everything runs in your browser. There is no backend, no build step, and no depe
 - `Alt+1` … `Alt+5` switch tabs.
 - Shareable links for the splitter and the calculator.
 - Undo/redo in the splitter (`Ctrl+Z` / `Ctrl+Y`, or the buttons next to "Reset").
-- Installable as an offline-capable app (PWA) on desktop and mobile.
+- Installable as an offline-capable app (PWA) on desktop and mobile, with an on-screen notice when a new version is ready (just click "Update").
+- A GitHub link in the header for the source code.
 
 ## Running it locally
 
@@ -67,6 +70,16 @@ python -m http.server 8000
 ```
 
 Then open <http://localhost:8000>. Any static server works, for example the VS Code *Live Server* extension.
+
+## Running the tests
+
+The IPv4/IPv6 math (`js/ip-utils.js`, `js/ipv6-utils.js`) has a unit test suite using Node's built-in test runner — no dependencies to install, just Node 18+:
+
+```bash
+node --test test/
+```
+
+`package.json` exists only for this (`npm test` works too); it is not needed to run the app itself.
 
 ## Privacy
 
@@ -95,6 +108,8 @@ Fonts (Space Grotesk and JetBrains Mono) are self-hosted under `assets/fonts/` �
 | `js/i18n.js` | Translation lookup and language state |
 | `js/lang-en.js` | English translation dictionary |
 | `js/bitbar.js` | Bit-breakdown visualization used by the calculators |
+| `package.json` | Only declares the test script (`node --test`); not needed to run the app |
+| `test/` | Unit tests for the IPv4/IPv6 math |
 
 `index.html` loads scripts and styles with a version query (`?v=N`). Bump `N` after changing files so browsers do not serve cached copies. Bump `SW_VERSION` in `sw.js` at the same time — it controls the offline cache and forces installed copies to fetch the update.
 
@@ -107,8 +122,8 @@ Fonts (Space Grotesk and JetBrains Mono) are self-hosted under `assets/fonts/` �
 
 ## Ideas for the future
 - Combined IPv4 + IPv6 (dual-stack) plan.
-- Printable/PDF report and Terraform export for the clouds.
-- CSV import.
+- Terraform export for the clouds.
+- Accessibility audit (contrast, tab order, screen reader support).
 
 ## License
 

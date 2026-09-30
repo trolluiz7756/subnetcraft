@@ -210,9 +210,36 @@ new MutationObserver((records) => {
 }).observe(document.body, { childList: true, subtree: true });
 
 // ---------- PWA: offline support + "Install app" button ----------
+const updateBanner = document.getElementById('update-banner');
+const updateReload = document.getElementById('update-reload');
+const updateDismiss = document.getElementById('update-dismiss');
+
+function showUpdateBanner() {
+  updateBanner.hidden = false;
+}
+
+updateReload.addEventListener('click', () => window.location.reload());
+updateDismiss.addEventListener('click', () => { updateBanner.hidden = true; });
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => { /* offline support just won't be available */ });
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      // Another tab may have already installed an update that is sitting
+      // idle, waiting for every tab to close before it can take over.
+      if (reg.waiting && navigator.serviceWorker.controller) showUpdateBanner();
+
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          // "installed" with an existing controller means this is an update
+          // to an already-running app, not the very first install.
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateBanner();
+          }
+        });
+      });
+    }).catch(() => { /* offline support just won't be available */ });
   });
 }
 

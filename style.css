@@ -1244,6 +1244,63 @@ label.choice-inline { color: var(--muted); }
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ---- "New version available" banner (service worker update) ---- */
+.update-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 0);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 10px 16px;
+  border-radius: 12px;
+  background: var(--surface-solid);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 60;
+  max-width: calc(100vw - 32px);
+}
+.update-banner[hidden] { display: none; }
+.update-banner #update-dismiss {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ---- Printable VLSM report ---- */
+/* #print-report is built and filled right before window.print() is called
+   (see planner.js); it stays display:none on screen ([hidden] does that by
+   default) and is the only thing the print stylesheet below reveals. */
+@media print {
+  body > *:not(#print-report) { display: none !important; }
+  #print-report[hidden] { display: block !important; }
+  #print-report {
+    color: #000;
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 0;
+  }
+  .print-header { border-bottom: 2px solid #000; margin-bottom: 12px; padding-bottom: 8px; }
+  .print-header h1 { margin: 0 0 4px; font-size: 20px; }
+  .print-meta { margin: 0; color: #444; font-size: 12px; }
+  .print-summary { font-size: 13px; line-height: 1.5; margin-bottom: 16px; }
+  .print-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .print-table th, .print-table td {
+    border: 1px solid #999;
+    padding: 5px 7px;
+    text-align: left;
+  }
+  .print-table th { background: #eee; }
+  .print-table tr { break-inside: avoid; }
+  .print-note { margin-top: 12px; font-size: 12px; color: #333; }
+}
+
 /* ---- Help dropdown (replaces the wide guide card) ---- */
 .page-header { z-index: 5; }
 

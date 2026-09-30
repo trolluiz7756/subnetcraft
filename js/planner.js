@@ -1,6 +1,8 @@
 import { isValidIPv4, ipToInt, intToIp, prefixToMaskInt } from './ip-utils.js';
 import { MODES } from './modes.js';
-import { t, num, dec } from './i18n.js';
+import {
+  t, num, dec, getLang,
+} from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -71,6 +73,81 @@ function addRow(name = '', vlan = '', hosts = '') {
 }
 
 $('pl-add').addEventListener('click', () => addRow());
+
+// ---------- Import rows from a CSV file (name, VLAN, hosts) ----------
+
+function parseCsvLine(line) {
+  const cells = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const c = line[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i += 1; } else { inQuotes = false; }
+      } else {
+        cur += c;
+      }
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ',') {
+      cells.push(cur);
+      cur = '';
+    } else {
+      cur += c;
+    }
+  }
+  cells.push(cur);
+  return cells.map((c) => c.trim());
+}
+
+// A header row's last column ("equipos"/"hosts") won't be a plain number.
+function looksLikeHeaderRow(cells) {
+  return !/^\d+$/.test(cells[cells.length - 1] || '');
+}
+
+function parseCsvRows(text) {
+  const lines = text.split(/\r\n|\r|\n/).filter((l) => l.trim() !== '');
+  if (!lines.length) return [];
+  let rows = lines.map(parseCsvLine);
+  if (looksLikeHeaderRow(rows[0])) rows = rows.slice(1);
+  return rows
+    .map((cells) => {
+      if (cells.length >= 3) return { name: cells[0], vlan: cells[1], hosts: cells[2] };
+      if (cells.length === 2) return { name: cells[0], vlan: '', hosts: cells[1] };
+      return null;
+    })
+    .filter((r) => r && /^\d+$/.test(r.hosts.trim()) && Number(r.hosts) >= 1);
+}
+
+const importBtn = $('pl-import-csv');
+const importInput = $('pl-import-csv-input');
+
+importBtn.addEventListener('click', () => importInput.click());
+
+importInput.addEventListener('change', () => {
+  const file = importInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseCsvRows(String(reader.result));
+    importInput.value = '';
+    if (!rows.length) {
+      warn(t('No se encontraron filas válidas en el CSV. Usa columnas: nombre, VLAN (opcional), equipos.'));
+      return;
+    }
+    rowsBox.innerHTML = '';
+    rows.forEach((r) => addRow(r.name, r.vlan, r.hosts));
+    errorBox.hidden = true;
+    updateHint();
+    flash(importBtn, t('Importadas ({n})', { n: rows.length }));
+  };
+  reader.onerror = () => {
+    importInput.value = '';
+    warn(t('No se pudo leer el archivo.'));
+  };
+  reader.readAsText(file);
+});
 
 function showModeInfo() {
   modeInfo.textContent = MODES[modeSelect.value].info;
@@ -240,6 +317,7 @@ function paintResult() {
     <div class="project-bar">
       <button type="button" id="pl-copy" class="btn-tool">Copiar tabla</button>
       <button type="button" id="pl-csv" class="btn-tool">Exportar CSV</button>
+      <button type="button" id="pl-print" class="btn-tool">Reporte / Imprimir</button>
       <button type="button" id="pl-send" class="btn-tool">Enviar a calculadora</button>
       <button type="button" id="pl-open" class="btn-tool">Abrir en el divisor</button>
     </div>
@@ -248,6 +326,67 @@ function paintResult() {
 
   bindActions();
   renderConfigCard();
+}
+
+// Builds a self-contained, print-only report: a short prose summary plus
+// the full subnet table. window.print()'s stylesheet (see style.css)
+// hides everything else on the page and shows only #print-report.
+function buildPrintReport() {
+  const {
+    rows, mode, growth, free, baseEnd, cursor, usedSize, baseSize,
+  } = plan;
+  const pct = (usedSize / baseSize) * 100;
+  const dateStr = new Date().toLocaleDateString(getLang() === 'es' ? 'es-ES' : 'en-US', {
+    year: 'numeric', month: 'long', day: 'numeric',
+  });
+  const MODE_LABELS = {
+    standard: 'Estándar', aws: 'AWS', azure: 'Azure', oci: 'OCI',
+  };
+  const modeLabel = t(MODE_LABELS[mode] || mode);
+
+  const summary = t(
+    'Este plan reparte la red {base} en {n} subred(es), usando {used} de {total} direcciones disponibles ({pct} %) en modo {mode}.{growth}',
+    {
+      base: plan.base,
+      n: rows.length,
+      used: num(usedSize),
+      total: num(baseSize),
+      pct: dec(pct.toFixed(pct < 10 ? 1 : 0)),
+      mode: modeLabel,
+      growth: growth ? t(' Incluye un {n} % de margen de crecimiento.', { n: growth }) : '',
+    },
+  );
+
+  const rowsHtml = rows.map((r) => `<tr>
+    <td>${escapeHtml(r.name)}</td>
+    <td>${escapeHtml(r.vlan) || '—'}</td>
+    <td>${intToIp(r.net)}/${r.prefix}</td>
+    <td>${intToIp(prefixToMaskInt(r.prefix))}</td>
+    <td>${num(r.hosts)}</td>
+    <td>${num(r.usable)}</td>
+    <td>${intToIp(r.gateway)}</td>
+    <td>${r.dhcpStart === null ? '—' : `${intToIp(r.dhcpStart)}–${intToIp(r.dhcpEnd)}`}</td>
+  </tr>`).join('');
+
+  const freeText = free.length
+    ? free.map((b) => `${intToIp(b.start)}/${b.prefix}`).join(', ')
+    : t('ninguno');
+
+  return `
+    <header class="print-header">
+      <h1>${t('Plan de direccionamiento IP')}</h1>
+      <p class="print-meta">${t('Generado el {date}', { date: dateStr })}</p>
+    </header>
+    <p class="print-summary">${summary}</p>
+    <table class="print-table">
+      <thead><tr>
+        <th>${t('Nombre')}</th><th>${t('VLAN')}</th><th>${t('Subred')}</th><th>${t('Máscara')}</th>
+        <th>${t('Pedidos')}</th><th>${t('Capacidad')}</th><th>${t('Gateway')}</th><th>${t('DHCP')}</th>
+      </tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    <p class="print-note">${t('Espacio libre restante: {free}.', { free: freeText })}</p>
+  `;
 }
 
 function tableMatrix() {
@@ -299,6 +438,12 @@ function bindActions() {
     try { localStorage.setItem(SAVED_SUBNETS_KEY, JSON.stringify([...fresh, ...saved])); } catch { /* storage unavailable */ }
     window.dispatchEvent(new Event('ipcalc:saved-changed'));
     flash(e.target, fresh.length ? t('Enviadas ({n})', { n: fresh.length }) : t('Ya estaban'));
+  });
+
+  $('pl-print').addEventListener('click', () => {
+    const report = document.getElementById('print-report');
+    report.innerHTML = buildPrintReport();
+    window.print();
   });
 
   $('pl-open').addEventListener('click', () => {

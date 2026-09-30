@@ -12,6 +12,7 @@ t.html
 t2.html
 t-*.js
 t-*.html
+verify-*.html
 
 # Logs
 *.log

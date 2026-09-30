@@ -28,9 +28,11 @@ Todo se ejecuta en tu navegador. No hay servidor, ni paso de compilación, ni de
 
 ### Planificador VLSM
 - Escribe nombre, VLAN y cantidad de equipos de cada red, elige un margen de crecimiento (0 a 100 %) y obtén la subred exacta de cada una, acomodadas sin huecos.
+- **Importa un CSV** (nombre, VLAN, equipos) en vez de escribir fila por fila.
 - Una sugerencia en vivo te dice si tu prefijo base es muy pequeño, justo, o mucho más grande de lo necesario.
 - Barra de uso con leyenda, bloques de espacio libre y una tabla con máscara, capacidad, gateway, DHCP y rango utilizable.
 - Genera **configuración para equipos** de Cisco IOS, MikroTik RouterOS, FortiGate y Linux (iproute2 + dnsmasq) en modo Estándar.
+- **Reporte / Imprimir**: un resumen imprimible de una página (red base, uso, tabla de subredes) — usa el diálogo de impresión del navegador para guardarlo como PDF.
 
 ### Calculadora IPv4
 - Acepta `192.168.1.10/24`, `192.168.1.10 255.255.255.0`, un prefijo `/24`, una máscara con puntos o un wildcard.
@@ -55,7 +57,8 @@ Todo se ejecuta en tu navegador. No hay servidor, ni paso de compilación, ni de
 - `Alt+1` … `Alt+5` cambian de pestaña.
 - Enlaces compartibles para el divisor y la calculadora.
 - Deshacer/rehacer en el divisor (`Ctrl+Z` / `Ctrl+Y`, o los botones junto a "Reiniciar").
-- Se puede instalar como app (funciona sin conexión) en computadora y celular.
+- Se puede instalar como app (funciona sin conexión) en computadora y celular, con un aviso en pantalla cuando hay una versión nueva lista (solo dale a "Actualizar").
+- Un enlace a GitHub en el encabezado con el código fuente.
 
 ## Ejecutarla en local
 
@@ -67,6 +70,16 @@ python -m http.server 8000
 ```
 
 Luego abre <http://localhost:8000>. Sirve cualquier servidor estático, por ejemplo la extensión *Live Server* de VS Code.
+
+## Correr las pruebas
+
+La matemática IPv4/IPv6 (`js/ip-utils.js`, `js/ipv6-utils.js`) tiene una suite de pruebas usando el test runner nativo de Node — sin dependencias que instalar, solo Node 18+:
+
+```bash
+node --test test/
+```
+
+`package.json` existe solo para esto (`npm test` también funciona); no hace falta para correr la app en sí.
 
 ## Privacidad
 
@@ -95,6 +108,8 @@ Las fuentes (Space Grotesk y JetBrains Mono) están alojadas dentro del proyecto
 | `js/i18n.js` | Búsqueda de traducciones y estado del idioma |
 | `js/lang-en.js` | Diccionario de traducción al inglés |
 | `js/bitbar.js` | Visualización de bits usada por las calculadoras |
+| `package.json` | Solo declara el script de pruebas (`node --test`); no hace falta para correr la app |
+| `test/` | Pruebas unitarias de la matemática IPv4/IPv6 |
 
 `index.html` carga scripts y estilos con un parámetro de versión (`?v=N`). Sube `N` después de modificar archivos para que los navegadores no sirvan copias en caché. Sube también `SW_VERSION` en `sw.js` al mismo tiempo: controla la caché sin conexión y obliga a las copias instaladas a bajar la actualización.
 
@@ -107,8 +122,8 @@ Las fuentes (Space Grotesk y JetBrains Mono) están alojadas dentro del proyecto
 
 ## Ideas a futuro
 - Plan combinado IPv4 + IPv6 (dual-stack).
-- Informe imprimible o PDF y exportación a Terraform para las nubes.
-- Importación desde CSV.
+- Exportación a Terraform para las nubes.
+- Auditoría de accesibilidad (contraste, orden de tabulación, soporte para lectores de pantalla).
 
 ## Licencia
 
