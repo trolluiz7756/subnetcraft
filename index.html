@@ -10,9 +10,10 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#ff5252" />
-  <link rel="stylesheet" href="style.css?v=64" />
+  <link rel="stylesheet" href="style.css?v=65" />
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
   <div class="bg-grid" aria-hidden="true"></div>
 
   <header class="page-header">
@@ -30,20 +31,20 @@
         <span class="hamburger-bar"></span>
       </button>
     </div>
-      <nav class="tabs" id="tabs-menu">
-        <button type="button" class="tab-btn active" data-tab="splitter">
+      <nav class="tabs" id="tabs-menu" role="tablist" aria-label="Secciones de la aplicación">
+        <button type="button" class="tab-btn active" data-tab="splitter" role="tab" id="tabbtn-splitter" aria-selected="true" aria-controls="tab-splitter">
           <span class="tab-index">01</span> Divisor visual
         </button>
-        <button type="button" class="tab-btn" data-tab="planner">
+        <button type="button" class="tab-btn" data-tab="planner" role="tab" id="tabbtn-planner" aria-selected="false" aria-controls="tab-planner">
           <span class="tab-index">02</span> Planificador VLSM
         </button>
-        <button type="button" class="tab-btn" data-tab="calculator">
+        <button type="button" class="tab-btn" data-tab="calculator" role="tab" id="tabbtn-calculator" aria-selected="false" aria-controls="tab-calculator">
           <span class="tab-index">03</span> Calculadora IPv4
         </button>
-        <button type="button" class="tab-btn" data-tab="ipv6">
+        <button type="button" class="tab-btn" data-tab="ipv6" role="tab" id="tabbtn-ipv6" aria-selected="false" aria-controls="tab-ipv6">
           <span class="tab-index">04</span> Calculadora IPv6
         </button>
-        <button type="button" class="tab-btn" data-tab="tools">
+        <button type="button" class="tab-btn" data-tab="tools" role="tab" id="tabbtn-tools" aria-selected="false" aria-controls="tab-tools">
           <span class="tab-index">05</span> Herramientas
         </button>
       </nav>
@@ -95,8 +96,8 @@
       </div>
   </header>
 
-  <main>
-    <section id="tab-calculator" class="tab-panel">
+  <main id="main-content">
+    <section id="tab-calculator" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-calculator" tabindex="0">
       <p class="section-hint">Ingresa una IP y su prefijo CIDR o máscara para obtener el desglose completo de la red.</p>
 
       <div class="calc-layout">
@@ -136,7 +137,7 @@
             <button type="button" class="btn-tool v4-example" data-value="10.20.30.1/22">Oficina /22</button>
             <button type="button" class="btn-tool v4-example" data-value="10.0.0.1/30">Enlace punto a punto /30</button>
           </div>
-          <p id="calc-error" class="error-box" hidden></p>
+          <p id="calc-error" class="error-box" role="alert" hidden></p>
 
           <div id="calc-toolbar" class="calc-toolbar" hidden>
             <button type="button" id="calc-share" class="btn-tool">Copiar enlace</button>
@@ -147,13 +148,13 @@
       </div>
     </section>
 
-    <section id="tab-ipv6" class="tab-panel">
-      <div class="subtabs" role="tablist">
-        <button type="button" class="subtab active" data-subtab="plan">Plan guiado (empieza aquí)</button>
-        <button type="button" class="subtab" data-subtab="calc">Calculadora</button>
+    <section id="tab-ipv6" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-ipv6" tabindex="0">
+      <div class="subtabs" role="tablist" aria-label="Modo IPv6">
+        <button type="button" class="subtab active" data-subtab="plan" role="tab" id="subtabbtn-plan" aria-selected="true" aria-controls="v6-pane-plan">Plan guiado (empieza aquí)</button>
+        <button type="button" class="subtab" data-subtab="calc" role="tab" id="subtabbtn-calc" aria-selected="false" aria-controls="v6-pane-calc">Calculadora</button>
       </div>
 
-      <div id="v6-pane-plan" class="subpane active">
+      <div id="v6-pane-plan" class="subpane active" role="tabpanel" aria-labelledby="subtabbtn-plan">
         <p class="section-hint">¿Primera vez con IPv6? En tres pasos obtienes un plan de direccionamiento listo para usar, sin necesidad de entender los prefijos de antemano.</p>
 
         <details class="glossary">
@@ -210,11 +211,11 @@
         </div>
 
         <button type="button" id="v6-plan-generate" class="btn-primary">Generar mi plan</button>
-        <p id="v6-plan-error" class="error-box" hidden></p>
+        <p id="v6-plan-error" class="error-box" role="alert" hidden></p>
         <div id="v6-plan-result" class="plan-result" hidden></div>
       </div>
 
-      <div id="v6-pane-calc" class="subpane">
+      <div id="v6-pane-calc" class="subpane" role="tabpanel" aria-labelledby="subtabbtn-calc">
         <p class="section-hint">Analiza cualquier dirección o prefijo IPv6 y divídelo en subredes más pequeñas.</p>
         <form id="v6-form" class="panel-form">
           <div class="field">
@@ -231,7 +232,7 @@
           <button type="button" class="btn-tool v6-example" data-value="2001:db8:1:1::/64">Una LAN /64</button>
         </div>
         <p id="v6-note" class="mode-info"></p>
-        <p id="v6-error" class="error-box" hidden></p>
+        <p id="v6-error" class="error-box" role="alert" hidden></p>
         <div id="v6-results" class="results-grid" hidden></div>
 
         <div id="v6-split" class="v6-split" hidden>
@@ -255,7 +256,7 @@
       </div>
     </section>
 
-    <section id="tab-tools" class="tab-panel">
+    <section id="tab-tools" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-tools" tabindex="0">
       <p class="section-hint">Utilidades rápidas de IPv4.</p>
       <div class="tools-grid">
         <div class="tool-card">
@@ -265,7 +266,7 @@
             <input id="t-contains-net" type="text" placeholder="Red, ej. 10.0.0.0/8" autocomplete="off" />
             <button type="submit">Comprobar</button>
           </form>
-          <div id="t-contains-out" class="tool-out" hidden></div>
+          <div id="t-contains-out" class="tool-out" aria-live="polite" hidden></div>
         </div>
 
         <div class="tool-card">
@@ -274,7 +275,7 @@
             <input id="t-conv-input" type="text" placeholder="/24, 255.255.255.0 o 0.0.0.255" autocomplete="off" />
             <button type="submit">Convertir</button>
           </form>
-          <div id="t-conv-out" class="tool-out" hidden></div>
+          <div id="t-conv-out" class="tool-out" aria-live="polite" hidden></div>
         </div>
 
         <div class="tool-card">
@@ -283,7 +284,7 @@
             <textarea id="t-agg-input" rows="5" placeholder="Una red por línea&#10;192.168.0.0/24&#10;192.168.1.0/24"></textarea>
             <button type="submit">Resumir</button>
           </form>
-          <div id="t-agg-out" class="tool-out" hidden></div>
+          <div id="t-agg-out" class="tool-out" aria-live="polite" hidden></div>
         </div>
 
         <div class="tool-card">
@@ -293,7 +294,7 @@
             <input id="t-cmp-b" type="text" placeholder="Red B, ej. 10.0.1.0/24" autocomplete="off" />
             <button type="submit">Comparar</button>
           </form>
-          <div id="t-cmp-out" class="tool-out" hidden></div>
+          <div id="t-cmp-out" class="tool-out" aria-live="polite" hidden></div>
         </div>
 
         <div class="tool-card">
@@ -305,12 +306,12 @@
               <button type="button" id="t-ovl-load" class="btn-tool">Cargar subredes guardadas</button>
             </div>
           </form>
-          <div id="t-ovl-out" class="tool-out" hidden></div>
+          <div id="t-ovl-out" class="tool-out" aria-live="polite" hidden></div>
         </div>
       </div>
     </section>
 
-    <section id="tab-planner" class="tab-panel">
+    <section id="tab-planner" class="tab-panel" role="tabpanel" aria-labelledby="tabbtn-planner" tabindex="0">
       <p class="section-hint">Dile a la app cuántos equipos necesita cada red y calculará el tamaño exacto de cada subred, acomodándolas sin traslapes (VLSM). Después puedes sacar la configuración lista para tus equipos.</p>
 
       <div class="plan-layout">
@@ -372,11 +373,11 @@
           </div>
         </div>
       </div>
-      <p id="pl-error" class="error-box" hidden></p>
+      <p id="pl-error" class="error-box" role="alert" hidden></p>
       <div id="pl-result" class="plan-result" hidden></div>
     </section>
 
-    <section id="tab-splitter" class="tab-panel active">
+    <section id="tab-splitter" class="tab-panel active" role="tabpanel" aria-labelledby="tabbtn-splitter" tabindex="0">
       <p class="section-hint">Define una red base y divide o une bloques haciendo clic — como un árbol binario de subredes.</p>
       <form id="split-form" class="panel-form">
         <div class="field">
@@ -411,7 +412,7 @@
         </span>
       </form>
       <p id="split-mode-info" class="mode-info"></p>
-      <p id="split-error" class="error-box" hidden></p>
+      <p id="split-error" class="error-box" role="alert" hidden></p>
 
       <div class="project-bar">
         <input id="project-name" type="text" placeholder="Nombre del proyecto" autocomplete="off" />
@@ -467,12 +468,12 @@
 
   <div id="print-report" class="print-report" hidden></div>
 
-  <script type="module" src="js/i18n.js?v=64"></script>
-  <script type="module" src="js/calculator.js?v=64"></script>
-  <script type="module" src="js/ipv6.js?v=64"></script>
-  <script type="module" src="js/tools.js?v=64"></script>
-  <script type="module" src="js/planner.js?v=64"></script>
-  <script type="module" src="js/subnet-splitter.js?v=64"></script>
-  <script type="module" src="js/main.js?v=64"></script>
+  <script type="module" src="js/i18n.js?v=65"></script>
+  <script type="module" src="js/calculator.js?v=65"></script>
+  <script type="module" src="js/ipv6.js?v=65"></script>
+  <script type="module" src="js/tools.js?v=65"></script>
+  <script type="module" src="js/planner.js?v=65"></script>
+  <script type="module" src="js/subnet-splitter.js?v=65"></script>
+  <script type="module" src="js/main.js?v=65"></script>
 </body>
 </html>

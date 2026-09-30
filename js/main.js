@@ -6,7 +6,11 @@ const panels = document.querySelectorAll('.tab-panel');
 function showTab(name) {
   const panel = document.getElementById(`tab-${name}`);
   if (!panel) return;
-  tabButtons.forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
+  tabButtons.forEach((b) => {
+    const active = b.dataset.tab === name;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-selected', String(active));
+  });
   panels.forEach((p) => p.classList.toggle('active', p === panel));
   // The active tab's label can be bold/wider, which changes how much room
   // the tab bar needs — re-check whether it still fits next to the icons.

@@ -63,6 +63,7 @@ Todo se ejecuta en tu navegador. No hay servidor, ni paso de compilación, ni de
 - Deshacer/rehacer en el divisor (`Ctrl+Z` / `Ctrl+Y`, o los botones junto a "Reiniciar").
 - Se puede instalar como app (funciona sin conexión) en computadora y celular, con un aviso en pantalla cuando hay una versión nueva lista (solo dale a "Actualizar").
 - Un enlace a GitHub en el encabezado con el código fuente.
+- Accesible con teclado: las celdas de dividir/unir del divisor funcionan con Tab, Enter y Espacio (no solo con clic); las pestañas usan roles ARIA de tab/tabpanel; hay un enlace para "saltar al contenido principal"; los errores de formulario se anuncian a lectores de pantalla.
 
 ## Ejecutarla en local
 
@@ -127,7 +128,6 @@ Las fuentes (Space Grotesk y JetBrains Mono) están alojadas dentro del proyecto
 ## Ideas a futuro
 - Plan combinado IPv4 + IPv6 (dual-stack).
 - Exportación a Terraform para las nubes.
-- Auditoría de accesibilidad (contraste, orden de tabulación, soporte para lectores de pantalla).
 
 ## Licencia
 

@@ -44,7 +44,10 @@ function anatomy(prefix, subnetPrefix = 64) {
 
 document.querySelectorAll('.subtab').forEach((btn) => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.subtab').forEach((b) => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.subtab').forEach((b) => {
+      b.classList.toggle('active', b === btn);
+      b.setAttribute('aria-selected', String(b === btn));
+    });
     document.querySelectorAll('.subpane').forEach((p) => p.classList.toggle('active', p.id === `v6-pane-${btn.dataset.subtab}`));
   });
 });

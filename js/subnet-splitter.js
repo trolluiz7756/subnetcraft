@@ -179,6 +179,24 @@ function maxPrefixIn(node) {
   return Math.max(maxPrefixIn(node.children[0]), maxPrefixIn(node.children[1]));
 }
 
+// Tree cells are <td>s, not <button>s (they need to span table rows/columns
+// and hold a rowSpan, which a <button> can't), so without this they were
+// entirely mouse-only: no tabindex, no role, no way to activate them from a
+// keyboard. This makes them focusable, announced as buttons with a
+// description of what they do, and operable with Enter or Space.
+function makeCellInteractive(td, label, action) {
+  td.tabIndex = 0;
+  td.setAttribute('role', 'button');
+  td.setAttribute('aria-label', label);
+  td.addEventListener('click', action);
+  td.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      action();
+    }
+  });
+}
+
 function render() {
   const leaves = getLeaves(root);
   annotate(root, 0);
@@ -200,10 +218,10 @@ function render() {
       <td class="mono">${info.network} – ${info.broadcast}</td>
       <td class="mono">${info.firstHost} – ${info.lastHost}</td>
       <td>${num(info.usable)}</td>
-      <td><input type="text" class="vlan-input" placeholder="VLAN" value="${escapeHtml(leaf.vlan)}" /></td>
+      <td><input type="text" class="vlan-input" placeholder="VLAN" aria-label="${t('VLAN de {cidr}', { cidr: info.cidr })}" value="${escapeHtml(leaf.vlan)}" /></td>
       <td class="mono">${info.gateway || '—'}</td>
       <td class="mono">${info.dhcp || '—'}</td>
-      <td><input type="text" class="note-input" placeholder="Nota" value="${escapeHtml(leaf.label)}" /></td>
+      <td><input type="text" class="note-input" placeholder="Nota" aria-label="${t('Nota de {cidr}', { cidr: info.cidr })}" value="${escapeHtml(leaf.label)}" /></td>
     `;
     tr.querySelector('.vlan-input').addEventListener('input', (e) => {
       leaf.vlan = e.target.value;
@@ -233,16 +251,18 @@ function render() {
         td.colSpan = maxPrefix - node.prefix + 1;
         if (node.prefix < minPrefix()) {
           td.className = `tree-cell tree-split ${tone}`;
+          const label = t('Dividir la subred /{n}', { n: node.prefix });
           td.title = t('Clic para dividir esta subred');
-          td.addEventListener('click', () => { splitNode(node); render(); pushHistory(); });
+          makeCellInteractive(td, label, () => { splitNode(node); render(); pushHistory(); });
         } else {
           td.className = `tree-cell tree-disabled ${tone}`;
           td.title = t('Tamaño mínimo del modo: /{n}', { n: minPrefix() });
         }
       } else {
         td.className = `tree-cell tree-join ${tone}`;
+        const label = t('Unir la subred /{n}', { n: node.prefix });
         td.title = t('Clic para unir esta subred');
-        td.addEventListener('click', () => { joinNode(node); render(); pushHistory(); });
+        makeCellInteractive(td, label, () => { joinNode(node); render(); pushHistory(); });
       }
 
       treeCells.push(td);

@@ -63,6 +63,7 @@ Everything runs in your browser. There is no backend, no build step, and no depe
 - Undo/redo in the splitter (`Ctrl+Z` / `Ctrl+Y`, or the buttons next to "Reset").
 - Installable as an offline-capable app (PWA) on desktop and mobile, with an on-screen notice when a new version is ready (just click "Update").
 - A GitHub link in the header for the source code.
+- Keyboard accessible: the splitter's split/join cells work with Tab, Enter and Space (not just clicking); tabs use proper ARIA tab/tabpanel roles; a "skip to main content" link; form errors are announced to screen readers.
 
 ## Running it locally
 
@@ -127,7 +128,6 @@ Fonts (Space Grotesk and JetBrains Mono) are self-hosted under `assets/fonts/` â
 ## Ideas for the future
 - Combined IPv4 + IPv6 (dual-stack) plan.
 - Terraform export for the clouds.
-- Accessibility audit (contrast, tab order, screen reader support).
 
 ## License
 
