@@ -611,12 +611,116 @@ const VENDORS = {
   },
 };
 
+// ---------- Terraform export (cloud modes only) ----------
+
+// Resource names must start with a letter/underscore in HCL, unlike safeName()
+// which only guarantees a non-empty result.
+function tfResourceName(text) {
+  const name = safeName(text).toLowerCase();
+  return /^[a-z_]/.test(name) ? name : `r_${name}`;
+}
+
+const TERRAFORM_BUILDERS = {
+  aws: (rows) => {
+    const header = [
+      '# Fill in your own VPC ID before running terraform apply.',
+      'variable "vpc_id" {',
+      '  type = string',
+      '}',
+      '',
+    ].join('\n');
+    const resources = rows.map((r) => [
+      `resource "aws_subnet" "${tfResourceName(r.name)}" {`,
+      '  vpc_id     = var.vpc_id',
+      `  cidr_block = "${intToIp(r.net)}/${r.prefix}"`,
+      '  tags = {',
+      `    Name = "${r.name.replace(/"/g, '\\"')}"`,
+      ...(r.vlan ? [`    VLAN = "${r.vlan.replace(/"/g, '\\"')}"`] : []),
+      '  }',
+      '}',
+    ].join('\n'));
+    return `${header}\n${resources.join('\n\n')}\n`;
+  },
+  azure: (rows) => {
+    const header = [
+      '# Fill in your own resource group and virtual network names before running terraform apply.',
+      'variable "resource_group_name" {',
+      '  type = string',
+      '}',
+      '',
+      'variable "vnet_name" {',
+      '  type = string',
+      '}',
+      '',
+    ].join('\n');
+    const resources = rows.map((r) => [
+      `resource "azurerm_subnet" "${tfResourceName(r.name)}" {`,
+      `  name                 = "${safeName(r.name)}"`,
+      '  resource_group_name  = var.resource_group_name',
+      '  virtual_network_name = var.vnet_name',
+      `  address_prefixes     = ["${intToIp(r.net)}/${r.prefix}"]`,
+      '}',
+    ].join('\n'));
+    return `${header}\n${resources.join('\n\n')}\n`;
+  },
+  oci: (rows) => {
+    const header = [
+      '# Fill in your own compartment and VCN OCIDs before running terraform apply.',
+      'variable "compartment_id" {',
+      '  type = string',
+      '}',
+      '',
+      'variable "vcn_id" {',
+      '  type = string',
+      '}',
+      '',
+    ].join('\n');
+    const resources = rows.map((r) => [
+      `resource "oci_core_subnet" "${tfResourceName(r.name)}" {`,
+      '  compartment_id = var.compartment_id',
+      '  vcn_id         = var.vcn_id',
+      `  cidr_block     = "${intToIp(r.net)}/${r.prefix}"`,
+      `  display_name   = "${r.name.replace(/"/g, '\\"')}"`,
+      '}',
+    ].join('\n'));
+    return `${header}\n${resources.join('\n\n')}\n`;
+  },
+};
+
 function renderConfigCard() {
   const card = $('pl-config-card');
   if (plan.mode !== 'standard') {
     card.innerHTML = `
       <h3>Configuración para equipos</h3>
-      <p class="tool-note">${t('En AWS, Azure y OCI las subredes se crean desde la consola, la CLI o Terraform con su bloque CIDR (columna "Subred"), y el gateway y el DHCP los gestiona la nube. Por eso aquí solo se genera configuración en modo Estándar.')}</p>`;
+      <p class="tool-note">${t('En AWS, Azure y OCI las subredes se crean desde la consola, la CLI o Terraform con su bloque CIDR (columna "Subred"), y el gateway y el DHCP los gestiona la nube. Por eso aquí no se genera configuración de equipos como en modo Estándar — pero sí puedes exportar el bloque de Terraform de abajo.')}</p>
+      <div class="config-bar">
+        <button type="button" id="pl-tf-copy" class="btn-tool">Copiar Terraform</button>
+        <button type="button" id="pl-tf-download" class="btn-tool">Descargar .tf</button>
+      </div>
+      <pre id="pl-tf" class="tool-pre config-pre"></pre>
+      <p class="tool-note">${t('Las variables al inicio ({vars}) son datos de tu cuenta que debes completar (por ejemplo con -var o un archivo .tfvars). Revisa siempre el plan de Terraform antes de aplicarlo.', { vars: plan.mode === 'aws' ? 'vpc_id' : plan.mode === 'azure' ? 'resource_group_name, vnet_name' : 'compartment_id, vcn_id' })}</p>
+    `;
+    $('pl-tf').textContent = TERRAFORM_BUILDERS[plan.mode](plan.rows);
+    $('pl-tf-copy').addEventListener('click', async (e) => {
+      try {
+        await navigator.clipboard.writeText($('pl-tf').textContent);
+        flash(e.target, t('Copiada'));
+      } catch {
+        warn(t('No se pudo copiar al portapapeles'));
+      }
+    });
+    $('pl-tf-download').addEventListener('click', () => {
+      const blob = new Blob([$('pl-tf').textContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'main.tf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      flash($('pl-tf-download'), t('Descargado'));
+    });
     return;
   }
   card.innerHTML = `

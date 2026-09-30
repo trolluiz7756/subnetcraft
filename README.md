@@ -32,7 +32,7 @@ Everything runs in your browser. There is no backend, no build step, and no depe
 - **Import a CSV** (name, VLAN, hosts) instead of typing rows by hand.
 - A live suggestion tells you whether your base prefix is too small, just right, or much larger than needed.
 - Usage bar with a legend, free-space blocks, and a table with mask, capacity, gateway, DHCP and usable range.
-- Generates **device configuration** for Cisco IOS, MikroTik RouterOS, FortiGate and Linux (iproute2 + dnsmasq) in Standard mode.
+- Generates **device configuration** for Cisco IOS, MikroTik RouterOS, FortiGate and Linux (iproute2 + dnsmasq) in Standard mode, or a **Terraform** file (`aws_subnet` / `azurerm_subnet` / `oci_core_subnet`) in the cloud modes.
 - **Report / Print**: a clean, printable one-page summary (base network, usage, subnet table) â€” use your browser's print dialog to save it as PDF.
 - Duplicate a row with one click to quickly add another network with near-identical settings.
 
@@ -127,7 +127,6 @@ Fonts (Space Grotesk and JetBrains Mono) are self-hosted under `assets/fonts/` â
 
 ## Ideas for the future
 - Combined IPv4 + IPv6 (dual-stack) plan.
-- Terraform export for the clouds.
 
 ## License
 

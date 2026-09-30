@@ -32,7 +32,7 @@ Todo se ejecuta en tu navegador. No hay servidor, ni paso de compilación, ni de
 - **Importa un CSV** (nombre, VLAN, equipos) en vez de escribir fila por fila.
 - Una sugerencia en vivo te dice si tu prefijo base es muy pequeño, justo, o mucho más grande de lo necesario.
 - Barra de uso con leyenda, bloques de espacio libre y una tabla con máscara, capacidad, gateway, DHCP y rango utilizable.
-- Genera **configuración para equipos** de Cisco IOS, MikroTik RouterOS, FortiGate y Linux (iproute2 + dnsmasq) en modo Estándar.
+- Genera **configuración para equipos** de Cisco IOS, MikroTik RouterOS, FortiGate y Linux (iproute2 + dnsmasq) en modo Estándar, o un archivo de **Terraform** (`aws_subnet` / `azurerm_subnet` / `oci_core_subnet`) en los modos de nube.
 - **Reporte / Imprimir**: un resumen imprimible de una página (red base, uso, tabla de subredes) — usa el diálogo de impresión del navegador para guardarlo como PDF.
 - Duplica una fila con un clic para agregar rápido otra red con ajustes casi idénticos.
 
@@ -127,7 +127,6 @@ Las fuentes (Space Grotesk y JetBrains Mono) están alojadas dentro del proyecto
 
 ## Ideas a futuro
 - Plan combinado IPv4 + IPv6 (dual-stack).
-- Exportación a Terraform para las nubes.
 
 ## Licencia
 
