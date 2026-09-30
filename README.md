@@ -76,7 +76,7 @@ Then open <http://localhost:8000>. Any static server works, for example the VS C
 The IPv4/IPv6 math (`js/ip-utils.js`, `js/ipv6-utils.js`) has a unit test suite using Node's built-in test runner — no dependencies to install, just Node 18+:
 
 ```bash
-node --test test/
+node --test
 ```
 
 `package.json` exists only for this (`npm test` works too); it is not needed to run the app itself.

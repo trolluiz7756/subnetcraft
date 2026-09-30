@@ -76,7 +76,7 @@ Luego abre <http://localhost:8000>. Sirve cualquier servidor estático, por ejem
 La matemática IPv4/IPv6 (`js/ip-utils.js`, `js/ipv6-utils.js`) tiene una suite de pruebas usando el test runner nativo de Node — sin dependencias que instalar, solo Node 18+:
 
 ```bash
-node --test test/
+node --test
 ```
 
 `package.json` existe solo para esto (`npm test` también funciona); no hace falta para correr la app en sí.

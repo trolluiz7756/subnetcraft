@@ -5,6 +5,6 @@
   "description": "Bilingual IPv4/IPv6 subnetting toolkit. No build step; this file only exists to run the test suite.",
   "type": "module",
   "scripts": {
-    "test": "node --test test/"
+    "test": "node --test"
   }
 }
