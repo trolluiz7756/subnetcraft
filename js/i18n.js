@@ -11,12 +11,15 @@ const TITLE_ES = 'SubnetCraft — Planifica, divide y documenta redes IP';
 const ATTRS = ['placeholder', 'title', 'aria-label', 'data-help', 'alt'];
 const SKIP_TEXT = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'PRE', 'CODE']);
 
+const hasDom = typeof document !== 'undefined';
+
 function detectLang() {
   try {
     const stored = localStorage.getItem(LANG_KEY);
     if (stored === 'es' || stored === 'en') return stored;
   } catch { /* storage unavailable */ }
-  return (navigator.language || 'es').toLowerCase().startsWith('es') ? 'es' : 'en';
+  const navLang = typeof navigator !== 'undefined' ? navigator.language : 'es';
+  return (navLang || 'es').toLowerCase().startsWith('es') ? 'es' : 'en';
 }
 
 let lang = detectLang();
@@ -100,23 +103,30 @@ function translateTree(node) {
 }
 
 function applyLang() {
+  if (!hasDom) return;
   document.documentElement.lang = lang;
   document.title = t(TITLE_ES);
   translateTree(document.body);
 }
 
-new MutationObserver((records) => {
-  if (lang !== 'en') return;
-  records.forEach((record) => {
-    if (record.type === 'attributes') {
-      if (record.target.nodeType === 1) translateAttributes(record.target);
-    } else {
-      record.addedNodes.forEach(translateTree);
-    }
-  });
-}).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ATTRS });
+// The DOM-walking side of translation (and the title/lang attribute updates)
+// only makes sense in a browser. Node (e.g. the test suite, which imports
+// ip-utils.js/ipv6-utils.js and transitively this module for t()) has no
+// document — t()/num()/dec()/getLang()/setLang() must still work there.
+if (hasDom) {
+  new MutationObserver((records) => {
+    if (lang !== 'en') return;
+    records.forEach((record) => {
+      if (record.type === 'attributes') {
+        if (record.target.nodeType === 1) translateAttributes(record.target);
+      } else {
+        record.addedNodes.forEach(translateTree);
+      }
+    });
+  }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ATTRS });
 
-applyLang();
+  applyLang();
+}
 
 export function setLang(next) {
   if (next !== 'es' && next !== 'en') return;
