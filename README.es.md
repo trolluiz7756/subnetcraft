@@ -25,6 +25,7 @@ Todo se ejecuta en tu navegador. No hay servidor, ni paso de compilación, ni de
 - Guarda **proyectos** con nombre (además, tu trabajo se autoguarda como borrador y se restaura al recargar).
 - Exportar: **copiar la imagen al portapapeles** (para pegarla en documentos), **PNG** (hasta 4x de resolución), **SVG** (vectorial, sin pérdida de calidad aunque haya muchas subredes), copiar la tabla o **CSV**.
 - Envía todas las subredes a la lista guardada de la calculadora IPv4, o **comparte un enlace** que restaura tu trabajo.
+- Haz clic en la subred (CIDR) de una fila para copiar toda la fila como una línea separada por tabulaciones.
 
 ### Planificador VLSM
 - Escribe nombre, VLAN y cantidad de equipos de cada red, elige un margen de crecimiento (0 a 100 %) y obtén la subred exacta de cada una, acomodadas sin huecos.
@@ -33,20 +34,23 @@ Todo se ejecuta en tu navegador. No hay servidor, ni paso de compilación, ni de
 - Barra de uso con leyenda, bloques de espacio libre y una tabla con máscara, capacidad, gateway, DHCP y rango utilizable.
 - Genera **configuración para equipos** de Cisco IOS, MikroTik RouterOS, FortiGate y Linux (iproute2 + dnsmasq) en modo Estándar.
 - **Reporte / Imprimir**: un resumen imprimible de una página (red base, uso, tabla de subredes) — usa el diálogo de impresión del navegador para guardarlo como PDF.
+- Duplica una fila con un clic para agregar rápido otra red con ajustes casi idénticos.
 
 ### Calculadora IPv4
 - Acepta `192.168.1.10/24`, `192.168.1.10 255.255.255.0`, un prefijo `/24`, una máscara con puntos o un wildcard.
 - Explica el resultado en lenguaje simple y muestra cómo se reparten los 32 bits entre red y equipos.
 - Guarda subredes con VLAN y sugerencia de gateway, vuelve a abrirlas o envíalas al divisor.
+- Recuerda tus últimas direcciones como sugerencias de autocompletado en el campo.
 
 ### IPv6
-- **Plan guiado**: genera una ULA privada `/48` (o usa tu propio prefijo), asigna una subred por VLAN y exporta el resultado.
-- **Calculadora**: formas comprimida y expandida, red, primera y última dirección, totales, tipo de dirección y un listador de subredes. No necesitas saber IPv6: incluye ejemplos y un glosario breve.
+- **Plan guiado**: genera una ULA privada `/48` (o usa tu propio prefijo), asigna una subred por VLAN y exporta el resultado. Las filas se pueden duplicar o importar desde un CSV (nombre, VLAN).
+- **Calculadora**: formas comprimida y expandida, red, primera y última dirección, totales, tipo de dirección y un listador de subredes. No necesitas saber IPv6: incluye ejemplos y un glosario breve. Recuerda tus últimas direcciones como sugerencias de autocompletado.
 
 ### Herramientas
 - ¿Esta IP está dentro de esta red?
 - Conversor de máscara / wildcard / CIDR.
 - Resumen de rutas (agregación), incluido el supernet único que las cubre.
+- **Comparar dos subredes**: si se traslapan, cuál contiene a cuál, su tamaño relativo, y si son adyacentes al grado de poder resumirse en una sola ruta.
 - Detección de traslapes, con opción de cargar las subredes guardadas de la calculadora.
 
 ## Comodidades del día a día

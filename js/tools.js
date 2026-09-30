@@ -177,7 +177,60 @@ convForm.addEventListener('submit', (e) => {
   }
 });
 
-// ---- 4. Overlap detection ----
+// ---- 4. Compare two subnets ----
+const cmpForm = document.getElementById('t-cmp-form');
+const cmpOut = document.getElementById('t-cmp-out');
+
+cmpForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  try {
+    const a = parseCidr(document.getElementById('t-cmp-a').value);
+    const b = parseCidr(document.getElementById('t-cmp-b').value);
+
+    let relation;
+    if (a.start === b.start && a.prefix === b.prefix) relation = t('Son la misma red');
+    else if (a.start <= b.start && a.end >= b.end) relation = t('La red A contiene a la red B');
+    else if (b.start <= a.start && b.end >= a.end) relation = t('La red B contiene a la red A');
+    else if (a.start > b.end || b.start > a.end) relation = t('No se traslapan');
+    else relation = t('Se traslapan parcialmente');
+
+    const sizeA = blockSize(a.prefix);
+    const sizeB = blockSize(b.prefix);
+    // CIDR block sizes are always powers of two, so this ratio is always a
+    // whole number — never something like 2.5 that would need rounding.
+    let sizeNote;
+    if (sizeA === sizeB) {
+      sizeNote = t('Del mismo tamaño ({n} direcciones cada una)', { n: num(sizeA) });
+    } else {
+      const bigger = sizeA > sizeB ? 'A' : 'B';
+      const factor = Math.max(sizeA, sizeB) / Math.min(sizeA, sizeB);
+      sizeNote = t('La red {bigger} es {factor}× más grande ({a} vs {b} direcciones)', {
+        bigger, factor: num(factor), a: num(sizeA), b: num(sizeB),
+      });
+    }
+
+    let adjacentNote = '';
+    if (a.start > b.end || b.start > a.end) {
+      if (summarise([a, b]).length === 1) {
+        adjacentNote = t('Son adyacentes y se pueden resumir en una sola ruta: {cidr}', { cidr: fmt(summarise([a, b])[0]) });
+      }
+    }
+
+    show(cmpOut, `
+      ${kv([
+        [t('Red A'), fmt(a)],
+        [t('Red B'), fmt(b)],
+        [t('Relación'), relation],
+        [t('Tamaños'), sizeNote],
+      ])}
+      ${adjacentNote ? `<p class="tool-note">${adjacentNote}</p>` : ''}
+    `);
+  } catch (err) {
+    show(cmpOut, escapeHtml(err.message), true);
+  }
+});
+
+// ---- 5. Overlap detection ----
 const ovlForm = document.getElementById('t-ovl-form');
 const ovlInput = document.getElementById('t-ovl-input');
 const ovlOut = document.getElementById('t-ovl-out');

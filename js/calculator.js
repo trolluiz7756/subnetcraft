@@ -16,6 +16,8 @@ const savedListEl = document.getElementById('saved-list');
 const savedEmpty = document.getElementById('saved-empty');
 
 const STORAGE_KEY = 'ipcalc.savedSubnets';
+const RECENT_KEY = 'ipcalc.recentIpv4';
+const RECENT_MAX = 10;
 
 let lastResult = null;
 
@@ -37,6 +39,29 @@ function persistSaved(list) {
 }
 
 let savedSubnets = loadSaved();
+
+// ---------- Recent addresses (native <datalist> autocomplete, no UI clutter) ----------
+
+function loadRecent() {
+  try {
+    const list = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+function renderRecent() {
+  const dl = document.getElementById('calc-ip-history');
+  if (!dl) return;
+  dl.innerHTML = loadRecent().map((v) => `<option value="${v.replace(/"/g, '&quot;')}"></option>`).join('');
+}
+
+function pushRecent(value) {
+  const list = [value, ...loadRecent().filter((v) => v !== value)].slice(0, RECENT_MAX);
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch { /* storage unavailable */ }
+  renderRecent();
+}
 
 function escapeHtml(str) {
   return str.replace(/[&<>"']/g, (c) => ({
@@ -215,6 +240,7 @@ form.addEventListener('submit', (e) => {
     lastResult = { ip, prefix };
     render(data);
     toolbar.hidden = false;
+    pushRecent(`${ip}/${prefix}`);
   } catch (err) {
     errorBox.textContent = err.message;
     errorBox.hidden = false;
@@ -278,6 +304,7 @@ window.addEventListener('ipcalc:lang', () => {
 });
 
 renderSavedList();
+renderRecent();
 
 // Restore a calculation from a shared link (#c=ip/prefix&v=vlan&g=first|last).
 const sharedParams = new URLSearchParams(location.hash.slice(1));

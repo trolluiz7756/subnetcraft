@@ -58,17 +58,30 @@ function requiredSize(hosts, mode, growth) {
   return size;
 }
 
-function addRow(name = '', vlan = '', hosts = '') {
+function addRow(name = '', vlan = '', hosts = '', afterEl = null) {
   const div = document.createElement('div');
   div.className = 'plan-row';
   div.innerHTML = `
     <input type="text" class="plan-name" placeholder="Nombre (ej. Ventas)" autocomplete="off" value="${escapeHtml(name)}" />
     <input type="text" class="plan-vlan" placeholder="VLAN (opcional)" inputmode="numeric" autocomplete="off" value="${escapeHtml(vlan)}" />
     <input type="text" class="plan-hosts" placeholder="Equipos" inputmode="numeric" autocomplete="off" value="${escapeHtml(hosts)}" />
+    <button type="button" class="btn-tool plan-duplicate" title="Duplicar esta red" aria-label="Duplicar">⧉</button>
     <button type="button" class="btn-tool btn-tool-danger plan-remove" title="Quitar esta red" aria-label="Quitar">×</button>
   `;
   div.querySelector('.plan-remove').addEventListener('click', () => { div.remove(); updateHint(); });
-  rowsBox.appendChild(div);
+  div.querySelector('.plan-duplicate').addEventListener('click', () => {
+    addRow(
+      div.querySelector('.plan-name').value,
+      div.querySelector('.plan-vlan').value,
+      div.querySelector('.plan-hosts').value,
+      div,
+    );
+  });
+  if (afterEl && afterEl.parentElement === rowsBox) {
+    afterEl.insertAdjacentElement('afterend', div);
+  } else {
+    rowsBox.appendChild(div);
+  }
   updateHint();
 }
 

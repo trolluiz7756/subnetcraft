@@ -65,6 +65,31 @@ const splitBody = $('v6-split-body');
 const MAX_ROWS = 128;
 let current = null;
 
+// ---------- Recent addresses (native <datalist> autocomplete, no UI clutter) ----------
+const RECENT_KEY = 'ipcalc.recentIpv6';
+const RECENT_MAX = 10;
+
+function loadRecent() {
+  try {
+    const list = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+function renderRecent() {
+  const dl = document.getElementById('v6-input-history');
+  if (!dl) return;
+  dl.innerHTML = loadRecent().map((v) => `<option value="${v.replace(/"/g, '&quot;')}"></option>`).join('');
+}
+
+function pushRecent(value) {
+  const list = [value, ...loadRecent().filter((v) => v !== value)].slice(0, RECENT_MAX);
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch { /* storage unavailable */ }
+  renderRecent();
+}
+
 function row(label, value) {
   const div = document.createElement('div');
   div.className = 'result-row';
@@ -123,6 +148,7 @@ form.addEventListener('submit', (e) => {
     const { value, prefix } = parseIPv6Cidr(text);
     current = { value, network: networkOf(value, prefix), prefix };
     render(value, prefix);
+    pushRecent(`${compressIPv6(value)}/${prefix}`);
     splitCard.hidden = false;
     splitPrefix.min = String(Math.min(prefix + 1, 128));
     if (!splitPrefix.value || Number(splitPrefix.value) <= prefix) {
@@ -277,19 +303,99 @@ ownInput.addEventListener('input', updateSizeOptions);
 
 $('v6-ula-regen').addEventListener('click', generateUla);
 
-function addPlanRow(name = '', vlan = '') {
+function addPlanRow(name = '', vlan = '', afterEl = null) {
   const div = document.createElement('div');
   div.className = 'plan-row';
   div.innerHTML = `
     <input type="text" class="plan-name" placeholder="Nombre (ej. Usuarios)" autocomplete="off" value="${escapeHtml(name)}" />
     <input type="text" class="plan-vlan" placeholder="VLAN (opcional)" inputmode="numeric" autocomplete="off" value="${escapeHtml(vlan)}" />
+    <button type="button" class="btn-tool plan-duplicate" title="Duplicar esta subred" aria-label="Duplicar">⧉</button>
     <button type="button" class="btn-tool btn-tool-danger plan-remove" title="Quitar esta subred" aria-label="Quitar">×</button>
   `;
   div.querySelector('.plan-remove').addEventListener('click', () => div.remove());
-  planRows.appendChild(div);
+  div.querySelector('.plan-duplicate').addEventListener('click', () => {
+    addPlanRow(div.querySelector('.plan-name').value, div.querySelector('.plan-vlan').value, div);
+  });
+  if (afterEl && afterEl.parentElement === planRows) {
+    afterEl.insertAdjacentElement('afterend', div);
+  } else {
+    planRows.appendChild(div);
+  }
 }
 
 $('v6-plan-add').addEventListener('click', () => addPlanRow());
+
+// ---------- Import rows from a CSV file (name, VLAN) ----------
+
+function parseCsvLine(line) {
+  const cells = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const c = line[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i += 1; } else { inQuotes = false; }
+      } else {
+        cur += c;
+      }
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ',') {
+      cells.push(cur);
+      cur = '';
+    } else {
+      cur += c;
+    }
+  }
+  cells.push(cur);
+  return cells.map((c) => c.trim());
+}
+
+// A header row's first cell won't look like an actual subnet/VLAN name people
+// would type ("nombre"/"name") — but since any text is a valid name here,
+// just skip a first row that literally reads "nombre" or "name".
+function looksLikeHeaderRow(cells) {
+  return /^(nombre|name)$/i.test(cells[0] || '');
+}
+
+function parseCsvRows(text) {
+  const lines = text.split(/\r\n|\r|\n/).filter((l) => l.trim() !== '');
+  if (!lines.length) return [];
+  let rows = lines.map(parseCsvLine);
+  if (looksLikeHeaderRow(rows[0])) rows = rows.slice(1);
+  return rows
+    .map((cells) => ({ name: cells[0] || '', vlan: cells[1] || '' }))
+    .filter((r) => r.name);
+}
+
+const v6ImportBtn = $('v6-plan-import-csv');
+const v6ImportInput = $('v6-plan-import-csv-input');
+
+v6ImportBtn.addEventListener('click', () => v6ImportInput.click());
+
+v6ImportInput.addEventListener('change', () => {
+  const file = v6ImportInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const rows = parseCsvRows(String(reader.result));
+    v6ImportInput.value = '';
+    if (!rows.length) {
+      planFail(t('No se encontraron filas válidas en el CSV. Usa columnas: nombre, VLAN (opcional).'));
+      return;
+    }
+    planRows.innerHTML = '';
+    rows.forEach((r) => addPlanRow(r.name, r.vlan));
+    planError.hidden = true;
+    flash(v6ImportBtn, t('Importadas ({n})', { n: rows.length }));
+  };
+  reader.onerror = () => {
+    v6ImportInput.value = '';
+    planFail(t('No se pudo leer el archivo.'));
+  };
+  reader.readAsText(file);
+});
 
 function planFail(message) {
   planResult.hidden = true;
@@ -439,6 +545,7 @@ generateUla();
 addPlanRow();
 addPlanRow();
 updateSizeOptions();
+renderRecent();
 
 // Re-paint whatever is currently on screen (built with t() at render time, so
 // it stays baked in the old language otherwise).

@@ -25,6 +25,7 @@ Everything runs in your browser. There is no backend, no build step, and no depe
 - Save named **projects** (your work is also autosaved as a draft and restored on reload).
 - Export: **copy the image to the clipboard** (to paste into documents), **PNG** (up to 4x resolution), **SVG** (vector, no quality loss with many subnets), copy the table, or **CSV**.
 - Send every subnet to the IPv4 calculator's saved list, or **share a link** that restores your work.
+- Click a row's subnet (CIDR) to copy the whole row as a tab-separated line.
 
 ### VLSM planner
 - Enter a name, VLAN and number of hosts per network, choose a growth margin (0 to 100 %), and get the exact subnet for each one, packed without gaps.
@@ -33,20 +34,23 @@ Everything runs in your browser. There is no backend, no build step, and no depe
 - Usage bar with a legend, free-space blocks, and a table with mask, capacity, gateway, DHCP and usable range.
 - Generates **device configuration** for Cisco IOS, MikroTik RouterOS, FortiGate and Linux (iproute2 + dnsmasq) in Standard mode.
 - **Report / Print**: a clean, printable one-page summary (base network, usage, subnet table) — use your browser's print dialog to save it as PDF.
+- Duplicate a row with one click to quickly add another network with near-identical settings.
 
 ### IPv4 calculator
 - Accepts `192.168.1.10/24`, `192.168.1.10 255.255.255.0`, a `/24` prefix, a dotted mask, or a wildcard.
 - Explains the result in plain language and shows how the 32 bits split between network and hosts.
 - Save subnets with a VLAN and a gateway suggestion, reopen them, or send them to the splitter.
+- Remembers your last addresses as autocomplete suggestions on the input.
 
 ### IPv6
-- **Guided plan**: generates a private ULA `/48` (or uses your own prefix), assigns a subnet per VLAN, and exports the result.
-- **Calculator**: compressed and expanded forms, network, first/last address, totals, address type, and a subnet lister. No IPv6 knowledge required; examples and a short glossary are built in.
+- **Guided plan**: generates a private ULA `/48` (or uses your own prefix), assigns a subnet per VLAN, and exports the result. Rows can be duplicated or imported from a CSV (name, VLAN).
+- **Calculator**: compressed and expanded forms, network, first/last address, totals, address type, and a subnet lister. No IPv6 knowledge required; examples and a short glossary are built in. Remembers your last addresses as autocomplete suggestions.
 
 ### Tools
 - Is this IP inside this network?
 - Mask / wildcard / CIDR converter.
 - Route summarization (aggregation), including the single covering supernet.
+- **Compare two subnets**: whether they overlap, which contains which, their relative size, and whether they're adjacent enough to summarize into one route.
 - Overlap detection, optionally loading the calculator's saved subnets.
 
 ## Everyday conveniences

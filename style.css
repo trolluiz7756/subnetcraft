@@ -1239,6 +1239,9 @@ label.choice-inline { color: var(--muted); }
 .results-grid .result-value, .tool-out .result-value { cursor: copy; }
 .results-grid .result-value:hover, .tool-out .result-value:hover { text-decoration: underline dotted; }
 
+.row-copy { cursor: copy; }
+.row-copy:hover { text-decoration: underline dotted; }
+
 .toast {
   position: fixed;
   left: 50%;

@@ -1,7 +1,7 @@
 // Bump SW_VERSION alongside the ?v= cache-busting number in index.html.
 // A version bump wipes the old cache entirely on activate, guaranteeing
 // everyone gets the fresh files instead of a stale offline copy.
-const SW_VERSION = 'v63';
+const SW_VERSION = 'v64';
 const CACHE_NAME = `subnetcraft-${SW_VERSION}`;
 
 const CORE_ASSETS = [

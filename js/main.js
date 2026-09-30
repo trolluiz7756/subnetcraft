@@ -213,12 +213,15 @@ function showToast(message) {
 }
 
 document.addEventListener('click', async (e) => {
-  const el = e.target.closest('.results-grid .result-value, .tool-out .result-value');
+  // [data-copy-row] (the splitter's table cells) copies a whole tab-separated
+  // row instead of just the clicked cell's own text.
+  const rowEl = e.target.closest('[data-copy-row]');
+  const el = rowEl || e.target.closest('.results-grid .result-value, .tool-out .result-value');
   if (!el) return;
-  const text = el.textContent.trim();
+  const text = rowEl ? rowEl.dataset.copyRow : el.textContent.trim();
   try {
     await navigator.clipboard.writeText(text);
-    showToast(t('Copiado: {text}', { text }));
+    showToast(rowEl ? t('Fila copiada') : t('Copiado: {text}', { text }));
   } catch {
     showToast(t('No se pudo copiar'));
   }

@@ -189,10 +189,14 @@ function render() {
 
   leaves.forEach((leaf, rowIndex) => {
     const info = subnetInfo(leaf);
+    const rowCopyText = [
+      info.cidr, `${info.network} – ${info.broadcast}`, `${info.firstHost} – ${info.lastHost}`,
+      String(info.usable), leaf.vlan, info.gateway || '', info.dhcp || '', leaf.label,
+    ].join('\t');
     const tr = document.createElement('tr');
     tr.className = toneClass(leaf);
     tr.innerHTML = `
-      <td class="mono">${info.cidr}</td>
+      <td class="mono row-copy" data-copy-row="${escapeHtml(rowCopyText)}" title="${t('Clic para copiar toda la fila')}">${info.cidr}</td>
       <td class="mono">${info.network} – ${info.broadcast}</td>
       <td class="mono">${info.firstHost} – ${info.lastHost}</td>
       <td>${num(info.usable)}</td>
