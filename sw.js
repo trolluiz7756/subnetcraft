@@ -1,7 +1,7 @@
 // Bump SW_VERSION alongside the ?v= cache-busting number in index.html.
 // A version bump wipes the old cache entirely on activate, guaranteeing
 // everyone gets the fresh files instead of a stale offline copy.
-const SW_VERSION = 'v57';
+const SW_VERSION = 'v58';
 const CACHE_NAME = `subnetcraft-${SW_VERSION}`;
 
 const CORE_ASSETS = [
@@ -9,19 +9,19 @@ const CORE_ASSETS = [
   'index.html',
   'style.css',
   'manifest.json',
-  'i18n.js',
-  'lang-en.js',
-  'modes.js',
-  'bitbar.js',
-  'ip-utils.js',
-  'ipv6-utils.js',
-  'calculator.js',
-  'ipv6.js',
-  'tools.js',
-  'planner.js',
-  'subnet-splitter.js',
-  'splitter-image.js',
-  'main.js',
+  'js/i18n.js',
+  'js/lang-en.js',
+  'js/modes.js',
+  'js/bitbar.js',
+  'js/ip-utils.js',
+  'js/ipv6-utils.js',
+  'js/calculator.js',
+  'js/ipv6.js',
+  'js/tools.js',
+  'js/planner.js',
+  'js/subnet-splitter.js',
+  'js/splitter-image.js',
+  'js/main.js',
   'assets/logo-header.png',
   'assets/favicon-32.png',
   'assets/favicon-64.png',

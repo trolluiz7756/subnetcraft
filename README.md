@@ -80,18 +80,21 @@ Fonts (Space Grotesk and JetBrains Mono) are self-hosted under `assets/fonts/` �
 |------|---------|
 | `index.html` | Page structure and tabs |
 | `style.css` | Styles, themes and layout |
-| `main.js` | Tabs, theme, Help menu, copy-on-click, shortcuts |
-| `ip-utils.js` | IPv4 math and input parsing |
-| `ipv6-utils.js` | IPv6 math (BigInt) |
-| `modes.js` | Standard / AWS / Azure / OCI addressing rules |
-| `calculator.js` | IPv4 calculator and saved subnets |
-| `ipv6.js` | IPv6 guided plan and calculator |
-| `planner.js` | VLSM planner and device configuration |
-| `subnet-splitter.js` | Visual splitter, projects, exports, share links |
-| `splitter-image.js` | High-resolution PNG and SVG rendering |
-| `tools.js` | Utility tools |
 | `manifest.json` | PWA metadata (name, icons, colors) |
-| `sw.js` | Service worker: offline caching for the installed app |
+| `sw.js` | Service worker: offline caching for the installed app (kept at the root — its scope covers the whole site) |
+| `js/main.js` | Tabs, theme, Help menu, copy-on-click, shortcuts |
+| `js/ip-utils.js` | IPv4 math and input parsing |
+| `js/ipv6-utils.js` | IPv6 math (BigInt) |
+| `js/modes.js` | Standard / AWS / Azure / OCI addressing rules |
+| `js/calculator.js` | IPv4 calculator and saved subnets |
+| `js/ipv6.js` | IPv6 guided plan and calculator |
+| `js/planner.js` | VLSM planner and device configuration |
+| `js/subnet-splitter.js` | Visual splitter, projects, exports, share links |
+| `js/splitter-image.js` | High-resolution PNG and SVG rendering |
+| `js/tools.js` | Utility tools |
+| `js/i18n.js` | Translation lookup and language state |
+| `js/lang-en.js` | English translation dictionary |
+| `js/bitbar.js` | Bit-breakdown visualization used by the calculators |
 
 `index.html` loads scripts and styles with a version query (`?v=N`). Bump `N` after changing files so browsers do not serve cached copies. Bump `SW_VERSION` in `sw.js` at the same time — it controls the offline cache and forces installed copies to fetch the update.
 

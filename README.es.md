@@ -80,18 +80,21 @@ Las fuentes (Space Grotesk y JetBrains Mono) están alojadas dentro del proyecto
 |---------|----------------|
 | `index.html` | Estructura de la página y pestañas |
 | `style.css` | Estilos, temas y diseño |
-| `main.js` | Pestañas, tema, menú de Ayuda, copiar con clic, atajos |
-| `ip-utils.js` | Matemática IPv4 e interpretación de la entrada |
-| `ipv6-utils.js` | Matemática IPv6 (BigInt) |
-| `modes.js` | Reglas de direccionamiento Estándar / AWS / Azure / OCI |
-| `calculator.js` | Calculadora IPv4 y subredes guardadas |
-| `ipv6.js` | Plan guiado y calculadora IPv6 |
-| `planner.js` | Planificador VLSM y configuración para equipos |
-| `subnet-splitter.js` | Divisor visual, proyectos, exportaciones y enlaces compartidos |
-| `splitter-image.js` | Generación de PNG de alta resolución y SVG |
-| `tools.js` | Herramientas de utilidad |
 | `manifest.json` | Metadatos de la PWA (nombre, iconos, colores) |
-| `sw.js` | Service worker: caché sin conexión para la app instalada |
+| `sw.js` | Service worker: caché sin conexión para la app instalada (se queda en la raíz — su alcance cubre todo el sitio) |
+| `js/main.js` | Pestañas, tema, menú de Ayuda, copiar con clic, atajos |
+| `js/ip-utils.js` | Matemática IPv4 e interpretación de la entrada |
+| `js/ipv6-utils.js` | Matemática IPv6 (BigInt) |
+| `js/modes.js` | Reglas de direccionamiento Estándar / AWS / Azure / OCI |
+| `js/calculator.js` | Calculadora IPv4 y subredes guardadas |
+| `js/ipv6.js` | Plan guiado y calculadora IPv6 |
+| `js/planner.js` | Planificador VLSM y configuración para equipos |
+| `js/subnet-splitter.js` | Divisor visual, proyectos, exportaciones y enlaces compartidos |
+| `js/splitter-image.js` | Generación de PNG de alta resolución y SVG |
+| `js/tools.js` | Herramientas de utilidad |
+| `js/i18n.js` | Búsqueda de traducciones y estado del idioma |
+| `js/lang-en.js` | Diccionario de traducción al inglés |
+| `js/bitbar.js` | Visualización de bits usada por las calculadoras |
 
 `index.html` carga scripts y estilos con un parámetro de versión (`?v=N`). Sube `N` después de modificar archivos para que los navegadores no sirvan copias en caché. Sube también `SW_VERSION` en `sw.js` al mismo tiempo: controla la caché sin conexión y obliga a las copias instaladas a bajar la actualización.
 
