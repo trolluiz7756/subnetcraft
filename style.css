@@ -111,7 +111,14 @@
    below) can be wider than the viewport near an edge on narrow screens.
    They stay invisible (opacity 0) until hovered/focused, but even invisible
    they still count toward document width unless we clip it here. */
-html { overflow-x: hidden; }
+/* scrollbar-gutter reserves the vertical scrollbar's space even on tabs
+   short enough not to need it, so the viewport's available width stays
+   constant across tabs. Without this, switching to a tab with taller
+   content (adding a real scrollbar) shrinks the available width by the
+   scrollbar's size right as main.js measures it, which — since some tabs
+   are short and some are tall — made the header's compact/inline decision
+   flip depending on which tab you were on instead of staying stable. */
+html { overflow-x: hidden; scrollbar-gutter: stable; }
 
 body {
   margin: 0;
