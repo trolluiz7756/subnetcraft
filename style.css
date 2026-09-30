@@ -229,34 +229,33 @@ body {
 .tabs-toggle[aria-expanded="true"] .hamburger-bar:nth-child(2) { opacity: 0; }
 .tabs-toggle[aria-expanded="true"] .hamburger-bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-/* Below this width, collapse the tab row behind a hamburger menu instead of
-   wrapping every section button onto the header. Three stacked rows, top to
-   bottom: help/language/theme, then the brand with the hamburger on its
-   right, then the tab list once the hamburger opens it.
-   The five tabs + brand + utility icons need roughly 1450px to sit on one
-   row without wrapping; below that (which includes very common laptop
-   window widths, not just phones) the one-row layout would otherwise
-   silently break — worse, only on tabs whose content is tall enough to
-   add a vertical scrollbar, since that scrollbar's width is exactly what
-   tips it over the edge on a window that was fitting by a few pixels. The
-   threshold here is set well above the ~1450px measured breakpoint to
-   leave room for that scrollbar, OS zoom, and longer translated labels. */
-@media (max-width: 1500px) {
-  .tabs-toggle { display: flex; }
-
-  .brand-row { width: 100%; justify-content: space-between; order: 0; }
-  .utility-controls { width: 100%; order: -1; margin-left: 0; }
-  .tabs {
-    display: none;
-    width: 100%;
-    flex-direction: column;
-    gap: 2px;
-    order: 10;
-    margin-left: 0;
-  }
-  .tabs.open { display: flex; }
-  .tabs .tab-btn { justify-content: flex-start; width: 100%; padding: 12px 14px; }
+/* Collapse the tab row behind a hamburger menu instead of wrapping every
+   section button onto the header. Three stacked rows, top to bottom:
+   help/language/theme, then the brand with the hamburger on its right,
+   then the tab list once the hamburger opens it.
+   This used to be a fixed @media width, but the tabs + brand + utility
+   icons' real footprint depends on font rendering, OS display scaling and
+   which language is active (translated labels aren't the same length) —
+   no single number was reliable across real browsers. main.js measures
+   whether everything actually fits and toggles this class instead, so it
+   is always correct instead of being tuned to one test environment. */
+.page-header.header-compact {
+  flex-wrap: wrap;
 }
+.header-compact .tabs-toggle { display: flex; }
+
+.header-compact .brand-row { width: 100%; justify-content: space-between; order: 0; }
+.header-compact .utility-controls { width: 100%; order: -1; margin-left: 0; }
+.header-compact .tabs {
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  gap: 2px;
+  order: 10;
+  margin-left: 0;
+}
+.header-compact .tabs.open { display: flex; }
+.header-compact .tabs .tab-btn { justify-content: flex-start; width: 100%; padding: 12px 14px; }
 
 .theme-toggle {
   display: flex;

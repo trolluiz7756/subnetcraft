@@ -8,6 +8,9 @@ function showTab(name) {
   if (!panel) return;
   tabButtons.forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
   panels.forEach((p) => p.classList.toggle('active', p === panel));
+  // The active tab's label can be bold/wider, which changes how much room
+  // the tab bar needs — re-check whether it still fits next to the icons.
+  updateHeaderLayout();
 }
 
 tabButtons.forEach((btn) => {
@@ -16,13 +19,62 @@ tabButtons.forEach((btn) => {
 
 window.addEventListener('ipcalc:show-tab', (e) => showTab(e.detail));
 
-// ---------- Mobile hamburger menu (collapses the tab row on narrow screens) ----------
+// ---------- Adaptive header: collapse the tab row behind a hamburger menu
+// whenever it (plus the brand and the utility icons) genuinely doesn't fit
+// on one line, instead of guessing a single width that's "narrow enough".
+// A fixed CSS breakpoint can't account for OS display scaling, browser
+// zoom, font rendering, or translated labels being a different length —
+// all of those change how many actual pixels the header needs. ----------
+const pageHeader = document.querySelector('.page-header');
+const brandRow = document.querySelector('.brand-row');
+const utilityControls = document.querySelector('.utility-controls');
 const tabsToggle = document.getElementById('tabs-toggle');
 const tabsMenu = document.getElementById('tabs-menu');
 
 function setTabsMenu(open) {
   tabsMenu.classList.toggle('open', open);
   tabsToggle.setAttribute('aria-expanded', String(open));
+}
+
+function headerFitsOnOneLine() {
+  // Measure with the compact layout switched off: its CSS forces .tabs and
+  // .utility-controls to width:100%, which would make this check trivially
+  // pass once already compact.
+  const wasCompact = pageHeader.classList.contains('header-compact');
+  if (wasCompact) pageHeader.classList.remove('header-compact');
+
+  // .tabs can also wrap its own buttons onto multiple lines when it's
+  // squeezed (see style.css), which would make its scrollWidth reflect
+  // whatever it's currently squeezed into rather than the width it truly
+  // needs. Force one unwrapped row for the instant we measure it.
+  const prevWrap = tabsMenu.style.flexWrap;
+  const prevWidth = tabsMenu.style.width;
+  tabsMenu.style.flexWrap = 'nowrap';
+  tabsMenu.style.width = 'max-content';
+
+  const style = getComputedStyle(pageHeader);
+  const available = pageHeader.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  const gap = parseFloat(style.columnGap) || 0;
+  // scrollWidth rounds to the nearest integer, so summing three of them can
+  // land exactly on `available` while the real (sub-pixel) layout needed a
+  // hair more and wrapped anyway. A small safety margin avoids flip-flopping
+  // right at that knife-edge.
+  const SAFETY_MARGIN = 4;
+  const needed = brandRow.scrollWidth + tabsMenu.scrollWidth + utilityControls.scrollWidth + gap * 2 + SAFETY_MARGIN;
+
+  tabsMenu.style.flexWrap = prevWrap;
+  tabsMenu.style.width = prevWidth;
+  if (wasCompact) pageHeader.classList.add('header-compact');
+  return needed <= available;
+}
+
+function updateHeaderLayout() {
+  const shouldBeCompact = !headerFitsOnOneLine();
+  const wasCompact = pageHeader.classList.contains('header-compact');
+  pageHeader.classList.toggle('header-compact', shouldBeCompact);
+  // Leaving compact mode should not leave the hamburger's tab list stuck
+  // open behind a now-hidden toggle button.
+  if (wasCompact && !shouldBeCompact) setTabsMenu(false);
 }
 
 tabsToggle.addEventListener('click', () => setTabsMenu(!tabsMenu.classList.contains('open')));
@@ -42,13 +94,11 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Resizing past the mobile breakpoint (e.g. rotating a tablet, or a devtools
-// resize) shouldn't leave the menu stuck open behind a now-hidden hamburger.
-// Keep this in sync with the @media breakpoint in style.css.
-const TABS_BREAKPOINT = 1500;
-window.addEventListener('resize', () => {
-  if (window.innerWidth > TABS_BREAKPOINT) setTabsMenu(false);
-});
+updateHeaderLayout();
+window.addEventListener('resize', updateHeaderLayout);
+// Translated labels are a different length, which can flip whether the
+// tab bar fits (see headerFitsOnOneLine above).
+window.addEventListener('ipcalc:lang', updateHeaderLayout);
 
 // Shared links open on the tab that produced them.
 if (location.hash.startsWith('#s=')) showTab('splitter');
