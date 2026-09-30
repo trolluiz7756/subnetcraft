@@ -208,3 +208,35 @@ new MutationObserver((records) => {
     node.querySelectorAll('input, textarea, select').forEach(markField);
   }));
 }).observe(document.body, { childList: true, subtree: true });
+
+// ---------- PWA: offline support + "Install app" button ----------
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* offline support just won't be available */ });
+  });
+}
+
+const installBtn = document.getElementById('install-app');
+let deferredInstallPrompt = null;
+
+// Fired by the browser when the manifest + service worker criteria are met.
+// Chromium-based browsers only (Safari/Firefox have no equivalent event —
+// the button simply never appears there, which is fine).
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  installBtn.hidden = false;
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  installBtn.hidden = true;
+});
+
+window.addEventListener('appinstalled', () => {
+  installBtn.hidden = true;
+  deferredInstallPrompt = null;
+});

@@ -25,6 +25,8 @@ const exportSvgBtn = document.getElementById('export-svg');
 const exportCopyImgBtn = document.getElementById('export-copy-img');
 const sendCalcBtn = document.getElementById('send-calc');
 const shareBtn = document.getElementById('share-link');
+const undoBtn = document.getElementById('split-undo');
+const redoBtn = document.getElementById('split-redo');
 
 const PROJECTS_KEY = 'ipcalc.projects';
 const DRAFT_KEY = 'ipcalc.splitterDraft';
@@ -203,10 +205,12 @@ function render() {
       leaf.vlan = e.target.value;
       saveDraft();
     });
+    tr.querySelector('.vlan-input').addEventListener('change', pushHistory);
     tr.querySelector('.note-input').addEventListener('input', (e) => {
       leaf.label = e.target.value;
       saveDraft();
     });
+    tr.querySelector('.note-input').addEventListener('change', pushHistory);
 
     // Walk up from this leaf toward the root collecting every ancestor whose
     // span starts exactly at this row. Appended leaf-first, so the largest
@@ -226,7 +230,7 @@ function render() {
         if (node.prefix < minPrefix()) {
           td.className = `tree-cell tree-split ${tone}`;
           td.title = t('Clic para dividir esta subred');
-          td.addEventListener('click', () => { splitNode(node); render(); });
+          td.addEventListener('click', () => { splitNode(node); render(); pushHistory(); });
         } else {
           td.className = `tree-cell tree-disabled ${tone}`;
           td.title = t('Tamaño mínimo del modo: /{n}', { n: minPrefix() });
@@ -234,7 +238,7 @@ function render() {
       } else {
         td.className = `tree-cell tree-join ${tone}`;
         td.title = t('Clic para unir esta subred');
-        td.addEventListener('click', () => { joinNode(node); render(); });
+        td.addEventListener('click', () => { joinNode(node); render(); pushHistory(); });
       }
 
       treeCells.push(td);
@@ -312,6 +316,55 @@ function saveDraft() {
   storageSet(DRAFT_KEY, JSON.stringify(serializeState()));
 }
 
+// ---------- Undo / redo ----------
+// Snapshots the whole tree (structure + VLAN/notes + mode/gw) as JSON text.
+// Text edits only push a snapshot on "change" (blur), not every keystroke,
+// so undo steps stay meaningful instead of one-character-at-a-time.
+
+const UNDO_LIMIT = 50;
+let history = [];
+let historyIndex = -1;
+let suppressHistory = true; // stays true until init finishes restoring state
+
+function updateUndoRedoButtons() {
+  undoBtn.disabled = historyIndex <= 0;
+  redoBtn.disabled = historyIndex >= history.length - 1;
+}
+
+function pushHistory() {
+  if (suppressHistory || !root) return;
+  const snapshot = JSON.stringify(serializeState());
+  if (history[historyIndex] === snapshot) return;
+  history = history.slice(0, historyIndex + 1);
+  history.push(snapshot);
+  if (history.length > UNDO_LIMIT) history.shift();
+  historyIndex = history.length - 1;
+  updateUndoRedoButtons();
+}
+
+function restoreFromHistory(index) {
+  if (index < 0 || index >= history.length) return;
+  suppressHistory = true;
+  applyState(JSON.parse(history[index]));
+  suppressHistory = false;
+  historyIndex = index;
+  updateUndoRedoButtons();
+}
+
+function undo() { if (historyIndex > 0) restoreFromHistory(historyIndex - 1); }
+function redo() { if (historyIndex < history.length - 1) restoreFromHistory(historyIndex + 1); }
+
+undoBtn.addEventListener('click', undo);
+redoBtn.addEventListener('click', redo);
+
+document.addEventListener('keydown', (e) => {
+  if (!e.ctrlKey && !e.metaKey) return;
+  if (e.target.closest('input, textarea, select')) return;
+  if (!document.getElementById('tab-splitter').classList.contains('active')) return;
+  const key = e.key.toLowerCase();
+  if (key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); } else if (key === 'y' || (key === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+});
+
 function loadProjects() {
   try {
     const list = JSON.parse(storageGet(PROJECTS_KEY) || '[]');
@@ -378,6 +431,7 @@ projectLoadBtn.addEventListener('click', () => {
     return;
   }
   projectName.value = project.name;
+  pushHistory();
 });
 
 projectDeleteBtn.addEventListener('click', () => {
@@ -577,6 +631,7 @@ window.addEventListener('ipcalc:open-splitter', (e) => {
     applyState({
       ip: d.ip, prefix: d.prefix, mode: d.mode || 'standard', gw: d.gw || 'first', tree: d.tree,
     });
+    pushHistory();
     return;
   }
   baseIpInput.value = d.ip;
@@ -685,6 +740,7 @@ baseForm.addEventListener('submit', (e) => {
   const networkInt = (ipToInt(ip) & maskInt) >>> 0;
   root = createNode(networkInt, prefix, null);
   render();
+  pushHistory();
 });
 
 resetBtn.addEventListener('click', () => {
@@ -694,6 +750,7 @@ resetBtn.addEventListener('click', () => {
   root.label = '';
   root.vlan = '';
   render();
+  pushHistory();
 });
 
 function pruneBeyond(node, limit) {
@@ -734,11 +791,13 @@ modeSelect.addEventListener('change', () => {
   if (root) pruneBeyond(root, limit);
   syncControls();
   if (root) render();
+  pushHistory();
 });
 
 gwSelect.addEventListener('change', () => {
   gwPref = gwSelect.value === 'last' ? 'last' : 'first';
   if (root) render();
+  pushHistory();
 });
 
 // Re-paint dynamically generated text (tree cell titles, table, project list
@@ -766,3 +825,9 @@ if (!restored) {
   basePrefixInput.value = '16';
   baseForm.dispatchEvent(new Event('submit'));
 }
+
+// Undo/redo starts tracking from here: whatever just got restored (or the
+// default network) becomes the first entry, so "undo" never has to guess
+// what came "before" the page loaded.
+suppressHistory = false;
+pushHistory();

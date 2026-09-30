@@ -54,6 +54,8 @@ Todo se ejecuta en tu navegador. No hay servidor, ni paso de compilación, ni de
 - Clic en cualquier valor de un resultado para copiarlo.
 - `Alt+1` … `Alt+5` cambian de pestaña.
 - Enlaces compartibles para el divisor y la calculadora.
+- Deshacer/rehacer en el divisor (`Ctrl+Z` / `Ctrl+Y`, o los botones junto a "Reiniciar").
+- Se puede instalar como app (funciona sin conexión) en computadora y celular.
 
 ## Ejecutarla en local
 
@@ -70,7 +72,7 @@ Luego abre <http://localhost:8000>. Sirve cualquier servidor estático, por ejem
 
 No se envía nada a ningún lado. Tus datos se quedan en tu navegador (`localStorage`): subredes guardadas, proyectos, el borrador del divisor, el tema y pequeñas preferencias de la interfaz. Los enlaces compartidos llevan el estado dentro del fragmento de la URL (`#…`), que los navegadores no envían a los servidores.
 
-Las fuentes (Space Grotesk y JetBrains Mono) se cargan desde Google Fonts; sin conexión, la app usa las fuentes del sistema.
+Las fuentes (Space Grotesk y JetBrains Mono) están alojadas dentro del proyecto en `assets/fonts/` — no hay peticiones a servicios externos, y funcionan sin conexión.
 
 ## Estructura del proyecto
 
@@ -88,8 +90,10 @@ Las fuentes (Space Grotesk y JetBrains Mono) se cargan desde Google Fonts; sin c
 | `subnet-splitter.js` | Divisor visual, proyectos, exportaciones y enlaces compartidos |
 | `splitter-image.js` | Generación de PNG de alta resolución y SVG |
 | `tools.js` | Herramientas de utilidad |
+| `manifest.json` | Metadatos de la PWA (nombre, iconos, colores) |
+| `sw.js` | Service worker: caché sin conexión para la app instalada |
 
-`index.html` carga scripts y estilos con un parámetro de versión (`?v=N`). Sube `N` después de modificar archivos para que los navegadores no sirvan copias en caché.
+`index.html` carga scripts y estilos con un parámetro de versión (`?v=N`). Sube `N` después de modificar archivos para que los navegadores no sirvan copias en caché. Sube también `SW_VERSION` en `sw.js` al mismo tiempo: controla la caché sin conexión y obliga a las copias instaladas a bajar la actualización.
 
 ## Notas y limitaciones
 - Los modos de nube siguen las reglas de direcciones reservadas de AWS, Azure y OCI. La configuración para equipos solo se genera en modo Estándar, porque en las nubes el gateway y el DHCP los gestiona la plataforma.
@@ -101,8 +105,7 @@ Las fuentes (Space Grotesk y JetBrains Mono) se cargan desde Google Fonts; sin c
 ## Ideas a futuro
 - Plan combinado IPv4 + IPv6 (dual-stack).
 - Informe imprimible o PDF y exportación a Terraform para las nubes.
-- Deshacer y rehacer en el divisor, e importación desde CSV.
-- Publicarla como sitio estático (por ejemplo GitHub Pages) y soporte sin conexión.
+- Importación desde CSV.
 
 ## Licencia
 

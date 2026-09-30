@@ -54,6 +54,8 @@ Everything runs in your browser. There is no backend, no build step, and no depe
 - Click any result value to copy it.
 - `Alt+1` … `Alt+5` switch tabs.
 - Shareable links for the splitter and the calculator.
+- Undo/redo in the splitter (`Ctrl+Z` / `Ctrl+Y`, or the buttons next to "Reset").
+- Installable as an offline-capable app (PWA) on desktop and mobile.
 
 ## Running it locally
 
@@ -70,7 +72,7 @@ Then open <http://localhost:8000>. Any static server works, for example the VS C
 
 Nothing is sent anywhere. Your data stays in your browser (`localStorage`): saved subnets, projects, the splitter draft, theme and small UI preferences. Shared links carry the state inside the URL fragment (`#…`), which browsers do not send to servers.
 
-Fonts (Space Grotesk and JetBrains Mono) are loaded from Google Fonts; offline, the app falls back to system fonts.
+Fonts (Space Grotesk and JetBrains Mono) are self-hosted under `assets/fonts/` — no third-party network requests, and they work fully offline.
 
 ## Project layout
 
@@ -88,8 +90,10 @@ Fonts (Space Grotesk and JetBrains Mono) are loaded from Google Fonts; offline, 
 | `subnet-splitter.js` | Visual splitter, projects, exports, share links |
 | `splitter-image.js` | High-resolution PNG and SVG rendering |
 | `tools.js` | Utility tools |
+| `manifest.json` | PWA metadata (name, icons, colors) |
+| `sw.js` | Service worker: offline caching for the installed app |
 
-`index.html` loads scripts and styles with a version query (`?v=N`). Bump `N` after changing files so browsers do not serve cached copies.
+`index.html` loads scripts and styles with a version query (`?v=N`). Bump `N` after changing files so browsers do not serve cached copies. Bump `SW_VERSION` in `sw.js` at the same time — it controls the offline cache and forces installed copies to fetch the update.
 
 ## Notes and limitations
 - Cloud modes follow the reserved-address rules of AWS, Azure and OCI. Device configuration is only generated in Standard mode, because in the clouds the gateway and DHCP are managed by the platform.
@@ -101,8 +105,7 @@ Fonts (Space Grotesk and JetBrains Mono) are loaded from Google Fonts; offline, 
 ## Ideas for the future
 - Combined IPv4 + IPv6 (dual-stack) plan.
 - Printable/PDF report and Terraform export for the clouds.
-- Undo/redo in the splitter and CSV import.
-- Publishing as a static site (for example GitHub Pages) and offline support.
+- CSV import.
 
 ## License
 
