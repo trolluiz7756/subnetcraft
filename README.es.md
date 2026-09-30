@@ -31,6 +31,7 @@ Todo se ejecuta en tu navegador. No hay servidor, ni paso de compilación, ni de
 - Escribe nombre, VLAN y cantidad de equipos de cada red, elige un margen de crecimiento (0 a 100 %) y obtén la subred exacta de cada una, acomodadas sin huecos.
 - **Importa un CSV** (nombre, VLAN, equipos) en vez de escribir fila por fila.
 - Una sugerencia en vivo te dice si tu prefijo base es muy pequeño, justo, o mucho más grande de lo necesario.
+- **Dual-stack**: opcionalmente también asigna una subred IPv6 /64 a cada red (mismo nombre y VLAN), desde una ULA generada o tu propio prefijo.
 - Barra de uso con leyenda, bloques de espacio libre y una tabla con máscara, capacidad, gateway, DHCP y rango utilizable.
 - Genera **configuración para equipos** de Cisco IOS, MikroTik RouterOS, FortiGate y Linux (iproute2 + dnsmasq) en modo Estándar, o un archivo de **Terraform** (`aws_subnet` / `azurerm_subnet` / `oci_core_subnet`) en los modos de nube.
 - **Reporte / Imprimir**: un resumen imprimible de una página (red base, uso, tabla de subredes) — usa el diálogo de impresión del navegador para guardarlo como PDF.
@@ -124,9 +125,6 @@ Las fuentes (Space Grotesk y JetBrains Mono) están alojadas dentro del proyecto
 - Copiar una imagen al portapapeles requiere un contexto seguro (`localhost` o HTTPS) y un navegador compatible; si no, usa la descarga de PNG.
 - Requiere un navegador moderno (usa módulos ES, `BigInt`, `color-mix()` y `:has()`).
 - Las herramientas de utilidad son solo IPv4.
-
-## Ideas a futuro
-- Plan combinado IPv4 + IPv6 (dual-stack).
 
 ## Licencia
 

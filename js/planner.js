@@ -1,4 +1,7 @@
 import { isValidIPv4, ipToInt, intToIp, prefixToMaskInt } from './ip-utils.js';
+import {
+  parseIPv6Cidr, compressIPv6, networkOf, lastOf,
+} from './ipv6-utils.js';
 import { MODES } from './modes.js';
 import {
   t, num, dec, getLang,
@@ -17,6 +20,73 @@ const gwSelect = $('pl-gw');
 const rowsBox = $('pl-rows');
 const errorBox = $('pl-error');
 const resultBox = $('pl-result');
+
+// ---------- Dual-stack: an IPv6 /64 alongside each IPv4 subnet ----------
+const dualstackCheck = $('pl-dualstack');
+const v6Box = $('pl-v6-box');
+const v6UlaValue = $('pl-v6-ula-value');
+const v6OwnBox = $('pl-v6-own-box');
+const v6OwnInput = $('pl-v6-own-input');
+const V6_SUBNET_SIZE = 64;
+
+let ulaNetwork = 0n;
+
+// RFC 4193: fd + 40 random bits, giving a private /48 nobody else is likely to pick.
+function generateUla() {
+  const bytes = new Uint8Array(5);
+  crypto.getRandomValues(bytes);
+  let rand = 0n;
+  bytes.forEach((b) => { rand = (rand << 8n) | BigInt(b); });
+  ulaNetwork = (0xfdn << 120n) | (rand << 80n);
+  v6UlaValue.textContent = `${compressIPv6(ulaNetwork)}/48`;
+}
+
+dualstackCheck.addEventListener('change', () => { v6Box.hidden = !dualstackCheck.checked; });
+document.querySelectorAll('input[name="pl-v6-source"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    const own = document.querySelector('input[name="pl-v6-source"]:checked').value === 'own';
+    $('pl-v6-ula-box').hidden = own;
+    v6OwnBox.hidden = !own;
+  });
+});
+$('pl-v6-ula-regen').addEventListener('click', generateUla);
+generateUla();
+
+// Assigns each row (by its stable `order`, not its post-VLSM-sort position) a
+// /64: the VLAN number when every row has a valid, unique one (matching the
+// same convention as the IPv6 guided plan), otherwise sequential order.
+function buildV6Plan(rows) {
+  let base;
+  if (document.querySelector('input[name="pl-v6-source"]:checked').value === 'ula') {
+    base = { network: ulaNetwork, prefix: 48 };
+  } else {
+    const parsed = parseIPv6Cidr(v6OwnInput.value);
+    base = { network: networkOf(parsed.value, parsed.prefix), prefix: parsed.prefix };
+  }
+  if (V6_SUBNET_SIZE <= base.prefix) {
+    throw new Error(t('Tu prefijo IPv6 (/{base}) ya es de tamaño /64 o más pequeño, así que no caben subredes /64 adentro. Usa un prefijo IPv6 más grande.', { base: base.prefix }));
+  }
+
+  const capacity = 1n << BigInt(V6_SUBNET_SIZE - base.prefix);
+  const vlanIds = rows.map((r) => Number(r.vlan));
+  const useVlan = rows.every((r) => /^\d+$/.test(r.vlan) && Number(r.vlan) >= 1 && Number(r.vlan) <= 4094)
+    && new Set(vlanIds).size === rows.length;
+  const indexes = useVlan ? vlanIds.map(BigInt) : rows.map((r) => BigInt(r.order + 1));
+  if (indexes.some((idx) => idx >= capacity)) {
+    throw new Error(t('No caben todas las redes en subredes /64: tu prefijo IPv6 solo tiene {cap}. Usa un prefijo IPv6 más grande.', { cap: dec(String(capacity)) }));
+  }
+
+  const step = 1n << BigInt(128 - V6_SUBNET_SIZE);
+  const byOrder = new Map();
+  rows.forEach((r, i) => {
+    const net = base.network + indexes[i] * step;
+    byOrder.set(r.order, {
+      subnet: `${compressIPv6(net)}/${V6_SUBNET_SIZE}`,
+      range: `${compressIPv6(net)} – ${compressIPv6(lastOf(net, V6_SUBNET_SIZE))}`,
+    });
+  });
+  return { base, byOrder };
+}
 
 let plan = null;
 
@@ -274,8 +344,18 @@ $('pl-generate').addEventListener('click', () => {
   const baseSize = baseEnd - baseStart;
 
   plan = {
-    rows, mode, gwPref, growth, base: `${intToIp(baseStart)}/${prefix}`, baseStart, prefix, free, baseEnd, cursor, usedSize, baseSize,
+    rows, mode, gwPref, growth, base: `${intToIp(baseStart)}/${prefix}`, baseStart, prefix, free, baseEnd, cursor, usedSize, baseSize, v6: null,
   };
+
+  if (dualstackCheck.checked) {
+    try {
+      plan.v6 = buildV6Plan(rows);
+    } catch (err) {
+      plan = null;
+      fail(t('IPv6 (dual-stack): {msg}', { msg: err.message }));
+      return;
+    }
+  }
 
   paintResult();
 });
@@ -294,12 +374,16 @@ function paintResult() {
   const legend = rows.map((r) => `<span class="legend-item"><span class="swatch" style="background:var(--c${r.tone})"></span><span class="legend-body"><span class="legend-name">${escapeHtml(r.name)}</span><span class="legend-sub"><span class="mono legend-cidr">${intToIp(r.net)}/${r.prefix}</span> <span class="legend-pct">${percent((r.size / baseSize) * 100)} %</span></span></span></span>`).join('')
     + (free.length ? `<span class="legend-item"><span class="swatch swatch-free"></span><span class="legend-body"><span class="legend-name">Libre</span><span class="legend-sub"><span class="legend-pct">${t('{pct} % · {n} direcciones', { pct: percent(freeShare), n: num(baseEnd - cursor) })}</span></span></span></span>` : '');
 
+  const v6 = plan.v6;
+  const v6Cell = (r) => (v6 ? v6.byOrder.get(r.order).subnet : null);
+
   resultBox.hidden = false;
   resultBox.innerHTML = `
     <div class="plan-summary">
       <div><span class="result-label">Red base</span><div class="mono plan-base">${plan.base}</div></div>
       <div><span class="result-label">Usado</span><div>${t('{used} de {total} direcciones ({pct} %)', { used: num(usedSize), total: num(baseSize), pct: dec(pct.toFixed(pct < 10 ? 2 : 1)) })}</div></div>
       <div><span class="result-label">Espacio libre</span><div class="mono">${free.length ? free.map((b) => `${intToIp(b.start)}/${b.prefix}`).join(', ') : t('ninguno')}</div></div>
+      ${v6 ? `<div><span class="result-label">${t('Prefijo IPv6')}</span><div class="mono plan-base">${compressIPv6(v6.base.network)}/${v6.base.prefix}</div></div>` : ''}
     </div>
     <div class="bar-block">
       <div class="bar-title">Uso de la red base</div>
@@ -309,7 +393,7 @@ function paintResult() {
     <div class="split-table-wrap">
       <table class="split-table">
         <thead><tr>
-          <th>Nombre</th><th>VLAN</th><th>Subred</th><th>Máscara</th><th>Pedidos</th><th>Capacidad</th><th>Gateway</th><th>DHCP</th><th>Rango utilizable</th>
+          <th>Nombre</th><th>VLAN</th><th>Subred</th><th>Máscara</th><th>Pedidos</th><th>Capacidad</th><th>Gateway</th><th>DHCP</th><th>Rango utilizable</th>${v6 ? `<th>${t('Subred IPv6')}</th>` : ''}
         </tr></thead>
         <tbody>
           ${rows.map((r) => `<tr class="tone-${r.tone}">
@@ -322,11 +406,12 @@ function paintResult() {
             <td class="mono">${intToIp(r.gateway)}</td>
             <td class="mono">${r.dhcpStart === null ? '—' : `${intToIp(r.dhcpStart)} – ${intToIp(r.dhcpEnd)}`}</td>
             <td class="mono">${intToIp(r.firstInt)} – ${intToIp(r.lastInt)}</td>
+            ${v6 ? `<td class="mono">${v6Cell(r)}</td>` : ''}
           </tr>`).join('')}
         </tbody>
       </table>
     </div>
-    <p class="tool-note">${t('Las redes se ordenan de la más grande a la más pequeña para que encajen sin dejar huecos.')}${mode === 'standard' ? t(' Cada red incluye una dirección extra para el gateway.') : ''}${growth ? t(' Incluye {n} % de margen de crecimiento.', { n: growth }) : ''}</p>
+    <p class="tool-note">${t('Las redes se ordenan de la más grande a la más pequeña para que encajen sin dejar huecos.')}${mode === 'standard' ? t(' Cada red incluye una dirección extra para el gateway.') : ''}${growth ? t(' Incluye {n} % de margen de crecimiento.', { n: growth }) : ''}${v6 ? t(' Cada subred IPv6 es un /64, el tamaño estándar para una LAN.') : ''}</p>
     <div class="project-bar">
       <button type="button" id="pl-copy" class="btn-tool">Copiar tabla</button>
       <button type="button" id="pl-csv" class="btn-tool">Exportar CSV</button>
@@ -370,6 +455,7 @@ function buildPrintReport() {
     },
   );
 
+  const v6 = plan.v6;
   const rowsHtml = rows.map((r) => `<tr>
     <td>${escapeHtml(r.name)}</td>
     <td>${escapeHtml(r.vlan) || '—'}</td>
@@ -379,6 +465,7 @@ function buildPrintReport() {
     <td>${num(r.usable)}</td>
     <td>${intToIp(r.gateway)}</td>
     <td>${r.dhcpStart === null ? '—' : `${intToIp(r.dhcpStart)}–${intToIp(r.dhcpEnd)}`}</td>
+    ${v6 ? `<td>${v6.byOrder.get(r.order).subnet}</td>` : ''}
   </tr>`).join('');
 
   const freeText = free.length
@@ -390,11 +477,12 @@ function buildPrintReport() {
       <h1>${t('Plan de direccionamiento IP')}</h1>
       <p class="print-meta">${t('Generado el {date}', { date: dateStr })}</p>
     </header>
-    <p class="print-summary">${summary}</p>
+    <p class="print-summary">${summary}${v6 ? t(' Incluye direccionamiento IPv6 sobre el prefijo {prefix}.', { prefix: `${compressIPv6(v6.base.network)}/${v6.base.prefix}` }) : ''}</p>
     <table class="print-table">
       <thead><tr>
         <th>${t('Nombre')}</th><th>${t('VLAN')}</th><th>${t('Subred')}</th><th>${t('Máscara')}</th>
         <th>${t('Pedidos')}</th><th>${t('Capacidad')}</th><th>${t('Gateway')}</th><th>${t('DHCP')}</th>
+        ${v6 ? `<th>${t('Subred IPv6')}</th>` : ''}
       </tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
@@ -403,11 +491,16 @@ function buildPrintReport() {
 }
 
 function tableMatrix() {
-  const header = [t('Nombre'), t('VLAN'), t('Subred'), t('Máscara'), t('Pedidos'), t('Capacidad'), t('Gateway'), t('DHCP'), t('Rango utilizable')];
+  const v6 = plan.v6;
+  const header = [
+    t('Nombre'), t('VLAN'), t('Subred'), t('Máscara'), t('Pedidos'), t('Capacidad'), t('Gateway'), t('DHCP'), t('Rango utilizable'),
+    ...(v6 ? [t('Subred IPv6')] : []),
+  ];
   const body = plan.rows.map((r) => [
     r.name, r.vlan, `${intToIp(r.net)}/${r.prefix}`, intToIp(prefixToMaskInt(r.prefix)), String(r.hosts), String(r.usable),
     intToIp(r.gateway), r.dhcpStart === null ? '' : `${intToIp(r.dhcpStart)} – ${intToIp(r.dhcpEnd)}`,
     `${intToIp(r.firstInt)} – ${intToIp(r.lastInt)}`,
+    ...(v6 ? [v6.byOrder.get(r.order).subnet] : []),
   ]);
   return [header, ...body];
 }

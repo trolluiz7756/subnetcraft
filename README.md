@@ -31,6 +31,7 @@ Everything runs in your browser. There is no backend, no build step, and no depe
 - Enter a name, VLAN and number of hosts per network, choose a growth margin (0 to 100 %), and get the exact subnet for each one, packed without gaps.
 - **Import a CSV** (name, VLAN, hosts) instead of typing rows by hand.
 - A live suggestion tells you whether your base prefix is too small, just right, or much larger than needed.
+- **Dual-stack**: optionally also assign a /64 IPv6 subnet to every network (same name and VLAN), from a generated ULA or your own prefix.
 - Usage bar with a legend, free-space blocks, and a table with mask, capacity, gateway, DHCP and usable range.
 - Generates **device configuration** for Cisco IOS, MikroTik RouterOS, FortiGate and Linux (iproute2 + dnsmasq) in Standard mode, or a **Terraform** file (`aws_subnet` / `azurerm_subnet` / `oci_core_subnet`) in the cloud modes.
 - **Report / Print**: a clean, printable one-page summary (base network, usage, subnet table) â€” use your browser's print dialog to save it as PDF.
@@ -124,9 +125,6 @@ Fonts (Space Grotesk and JetBrains Mono) are self-hosted under `assets/fonts/` â
 - Copying an image to the clipboard needs a secure context (`localhost` or HTTPS) and a browser that supports it; otherwise use the PNG download.
 - Requires a modern browser (it relies on ES modules, `BigInt`, `color-mix()` and `:has()`).
 - The utility tools are IPv4 only.
-
-## Ideas for the future
-- Combined IPv4 + IPv6 (dual-stack) plan.
 
 ## License
 
