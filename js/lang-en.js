@@ -35,6 +35,7 @@ export const EN = {
   'Cambiar tema': 'Switch theme',
   'Cambiar idioma (español / inglés)': 'Switch language (Spanish / English)',
   'Idioma': 'Language',
+  'Ver el código en GitHub': 'View the code on GitHub',
 
   // ---- IPv4 calculator ----
   'Ingresa una IP y su prefijo CIDR o máscara para obtener el desglose completo de la red.': 'Enter an IP and its CIDR prefix or mask to get the full breakdown of the network.',
