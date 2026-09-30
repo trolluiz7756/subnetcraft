@@ -229,11 +229,19 @@ body {
 .tabs-toggle[aria-expanded="true"] .hamburger-bar:nth-child(2) { opacity: 0; }
 .tabs-toggle[aria-expanded="true"] .hamburger-bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-/* Phone widths: collapse the tab row behind a hamburger menu instead of
+/* Below this width, collapse the tab row behind a hamburger menu instead of
    wrapping every section button onto the header. Three stacked rows, top to
    bottom: help/language/theme, then the brand with the hamburger on its
-   right, then the tab list once the hamburger opens it. */
-@media (max-width: 720px) {
+   right, then the tab list once the hamburger opens it.
+   The five tabs + brand + utility icons need roughly 1450px to sit on one
+   row without wrapping; below that (which includes very common laptop
+   window widths, not just phones) the one-row layout would otherwise
+   silently break — worse, only on tabs whose content is tall enough to
+   add a vertical scrollbar, since that scrollbar's width is exactly what
+   tips it over the edge on a window that was fitting by a few pixels. The
+   threshold here is set well above the ~1450px measured breakpoint to
+   leave room for that scrollbar, OS zoom, and longer translated labels. */
+@media (max-width: 1500px) {
   .tabs-toggle { display: flex; }
 
   .brand-row { width: 100%; justify-content: space-between; order: 0; }

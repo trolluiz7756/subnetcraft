@@ -44,8 +44,10 @@ document.addEventListener('keydown', (e) => {
 
 // Resizing past the mobile breakpoint (e.g. rotating a tablet, or a devtools
 // resize) shouldn't leave the menu stuck open behind a now-hidden hamburger.
+// Keep this in sync with the @media breakpoint in style.css.
+const TABS_BREAKPOINT = 1500;
 window.addEventListener('resize', () => {
-  if (window.innerWidth > 720) setTabsMenu(false);
+  if (window.innerWidth > TABS_BREAKPOINT) setTabsMenu(false);
 });
 
 // Shared links open on the tab that produced them.
